@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import PageSection from '../../components/common/PageSection.jsx'
 import InfoCard from '../../components/ui/InfoCard.jsx'
 import { getProjects } from '../../services/projectService.js'
+import { useRoleAccess } from '../../auth/useRoleAccess.js'
 import {
   getApiErrorMessage,
   getCollection,
@@ -10,6 +11,7 @@ import {
 } from '../../utils/apiResponse.js'
 
 function SlaProjectsListPage() {
+  const { canManageSla } = useRoleAccess()
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -61,9 +63,11 @@ function SlaProjectsListPage() {
               <h2>Project SLA list</h2>
               <p>Open an SLA record or create one for a project that does not have it yet.</p>
             </div>
-            <Link to="/sla-projects/create" className="primary-button action-link">
-              Create SLA
-            </Link>
+            {canManageSla ? (
+              <Link to="/sla-projects/create" className="primary-button action-link">
+                Create SLA
+              </Link>
+            ) : null}
           </div>
 
           {loading ? <p className="feedback-message">Loading projects...</p> : null}

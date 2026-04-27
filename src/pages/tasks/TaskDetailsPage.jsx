@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import PageSection from '../../components/common/PageSection.jsx'
 import InfoCard from '../../components/ui/InfoCard.jsx'
+import { useRoleAccess } from '../../auth/useRoleAccess.js'
 import {
   getTask,
   getTaskDevelopers,
@@ -15,6 +16,7 @@ import {
 } from '../../utils/apiResponse.js'
 
 function TaskDetailsPage() {
+  const { canManageTasks } = useRoleAccess()
   const { id } = useParams()
   const [task, setTask] = useState(null)
   const [developers, setDevelopers] = useState([])
@@ -144,11 +146,13 @@ function TaskDetailsPage() {
               )}
             </InfoCard>
 
-            <InfoCard wide>
-              <Link to={`/tasks/${id}/edit`} className="primary-button action-link">
-                Edit task
-              </Link>
-            </InfoCard>
+            {canManageTasks ? (
+              <InfoCard wide>
+                <Link to={`/tasks/${id}/edit`} className="primary-button action-link">
+                  Edit task
+                </Link>
+              </InfoCard>
+            ) : null}
           </>
         ) : null}
       </section>

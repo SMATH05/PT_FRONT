@@ -1,9 +1,47 @@
 import axiosClient from '../api/axiosClient.js'
 import API_ENDPOINTS from '../api/endpoints.js'
+import { APP_ROLES } from '../auth/roles.js'
 
-export async function getProjects() {
-    const response = await axiosClient.get(API_ENDPOINTS.projects.list)
-    return response.data
+function getProjectsCollection(payload) {
+    if (Array.isArray(payload)) {
+        return payload
+    }
+
+    if (Array.isArray(payload?.projects)) {
+        return payload.projects
+    }
+
+    if (Array.isArray(payload?.data)) {
+        return payload.data
+    }
+
+    return []
+}
+
+export async function getProjects(options = {}) {
+    const { actorIds = {}, currentRole = '' } = options
+
+    let response
+
+    if (currentRole === APP_ROLES.MANAGER && actorIds.manager) {
+        response = await axiosClient.get(API_ENDPOINTS.managers.projects(actorIds.manager))
+        return getProjectsCollection(response.data)
+    }
+
+    if (currentRole === APP_ROLES.CHEF_DE_PROJET && actorIds.chef_de_projet) {
+        response = await axiosClient.get(
+            API_ENDPOINTS.chefsDeProjet.projects(actorIds.chef_de_projet),
+        )
+        return getProjectsCollection(response.data)
+    }
+
+    if (currentRole === APP_ROLES.DEVELOPER && actorIds.developer) {
+        response = await axiosClient.get(API_ENDPOINTS.developers.projects(actorIds.developer))
+        return getProjectsCollection(response.data)
+    }
+
+    response = await axiosClient.get(API_ENDPOINTS.projects.list)
+    return getProjectsCollection(response.data)
 }
 
 export async function getProject(projectId) {
@@ -68,8 +106,7 @@ export async function deleteProjectFile(projectId, fileId) {
 
 export async function viewProjectFile(projectId, fileId) {
     const response = await axiosClient.get(
-        API_ENDPOINTS.projects.fileDetails(projectId, fileId),
-        {
+        API_ENDPOINTS.projects.fileDetails(projectId, fileId), {
             responseType: 'blob',
         },
     )
@@ -79,8 +116,7 @@ export async function viewProjectFile(projectId, fileId) {
 
 export async function downloadProjectFile(projectId, fileId) {
     const response = await axiosClient.get(
-        API_ENDPOINTS.projects.downloadFile(projectId, fileId),
-        {
+        API_ENDPOINTS.projects.downloadFile(projectId, fileId), {
             responseType: 'blob',
         },
     )

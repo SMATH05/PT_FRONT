@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import PageSection from '../../components/common/PageSection.jsx'
 import InfoCard from '../../components/ui/InfoCard.jsx'
 import { getTasks } from '../../services/taskService.js'
+import { useRoleAccess } from '../../auth/useRoleAccess.js'
 import {
   getApiErrorMessage,
   getCollection,
@@ -10,6 +11,7 @@ import {
 } from '../../utils/apiResponse.js'
 
 function TasksListPage() {
+  const { canManageTasks } = useRoleAccess()
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -59,9 +61,11 @@ function TasksListPage() {
               <h2>Tasks list</h2>
               <p>Each task can be linked to a project, a chef de projet, and several developers.</p>
             </div>
-            <Link to="/tasks/create" className="primary-button action-link">
-              Create task
-            </Link>
+            {canManageTasks ? (
+              <Link to="/tasks/create" className="primary-button action-link">
+                Create task
+              </Link>
+            ) : null}
           </div>
 
           {loading ? <p className="feedback-message">Loading tasks...</p> : null}
@@ -98,9 +102,11 @@ function TasksListPage() {
                           <Link to={`/tasks/${task.id}`} className="table-link">
                             View
                           </Link>
-                          <Link to={`/tasks/${task.id}/edit`} className="table-link">
-                            Edit
-                          </Link>
+                          {canManageTasks ? (
+                            <Link to={`/tasks/${task.id}/edit`} className="table-link">
+                              Edit
+                            </Link>
+                          ) : null}
                         </div>
                       </td>
                     </tr>

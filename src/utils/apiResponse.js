@@ -42,10 +42,23 @@ export function getApiErrorMessage(error, fallback = 'Something went wrong.') {
   const responseData = error?.response?.data
 
   if (typeof responseData === 'string' && responseData.trim()) {
+    const normalizedResponse = responseData.trim().toLowerCase()
+
+    if (
+      normalizedResponse.startsWith('<!doctype html') ||
+      normalizedResponse.startsWith('<html')
+    ) {
+      return 'The API returned an HTML page instead of JSON. Keep port 8000 as-is and make sure PT_BACK is running on http://127.0.0.1:8010.'
+    }
+
     return responseData
   }
 
   if (responseData?.message) {
+    if (responseData?.error) {
+      return `${responseData.message}: ${responseData.error}`
+    }
+
     return responseData.message
   }
 
@@ -59,6 +72,10 @@ export function getApiErrorMessage(error, fallback = 'Something went wrong.') {
     if (firstError) {
       return firstError
     }
+  }
+
+  if (error?.message) {
+    return error.message
   }
 
   return fallback

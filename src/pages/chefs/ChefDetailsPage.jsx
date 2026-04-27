@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import PageSection from '../../components/common/PageSection.jsx'
 import InfoCard from '../../components/ui/InfoCard.jsx'
+import { useRoleAccess } from '../../auth/useRoleAccess.js'
 import { getChefDeProjet } from '../../services/chefDeProjetService.js'
 import { getApiErrorMessage, getCollection, getEntity, getText } from '../../utils/apiResponse.js'
 
 function ChefDetailsPage() {
+  const { canManagePeople } = useRoleAccess()
   const { id } = useParams()
   const [chef, setChef] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -115,11 +117,13 @@ function ChefDetailsPage() {
               )}
             </InfoCard>
 
-            <InfoCard wide>
-              <Link to={`/chefs/${id}/edit`} className="primary-button action-link">
-                Edit chef de projet
-              </Link>
-            </InfoCard>
+            {canManagePeople ? (
+              <InfoCard wide>
+                <Link to={`/chefs/${id}/edit`} className="primary-button action-link">
+                  Edit chef de projet
+                </Link>
+              </InfoCard>
+            ) : null}
           </>
         ) : null}
       </section>

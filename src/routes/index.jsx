@@ -4,6 +4,7 @@ import HomePage from '../pages/HomePage.jsx'
 import MorePage from '../pages/MorePage.jsx'
 import ProfilePage from '../pages/ProfilePage.jsx'
 import ProtectedRoute from './ProtectedRoute.jsx'
+import RequireRole from './RequireRole.jsx'
 import ChefCreatePage from '../pages/chefs/ChefCreatePage.jsx'
 import ChefDetailsPage from '../pages/chefs/ChefDetailsPage.jsx'
 import ChefEditPage from '../pages/chefs/ChefEditPage.jsx'
@@ -30,6 +31,7 @@ import TaskCreatePage from '../pages/tasks/TaskCreatePage.jsx'
 import TaskDetailsPage from '../pages/tasks/TaskDetailsPage.jsx'
 import TaskEditPage from '../pages/tasks/TaskEditPage.jsx'
 import TasksListPage from '../pages/tasks/TasksListPage.jsx'
+import { APP_ROLES } from '../auth/roles.js'
 
 const router = createBrowserRouter([
   {
@@ -52,116 +54,146 @@ const router = createBrowserRouter([
             element: <MorePage />,
           },
           {
-            path: 'projects',
-            element: <ProjectsListPage />,
+            element: (
+              <RequireRole
+                allowedRoles={[
+                  APP_ROLES.MANAGER,
+                  APP_ROLES.CHEF_DE_PROJET,
+                  APP_ROLES.DEVELOPER,
+                ]}
+              />
+            ),
+            children: [
+              {
+                path: 'projects',
+                element: <ProjectsListPage />,
+              },
+              {
+                path: 'projects/:id',
+                element: <ProjectDetailsPage />,
+              },
+              {
+                path: 'developers/:id',
+                element: <DeveloperDetailsPage />,
+              },
+              {
+                path: 'tasks',
+                element: <TasksListPage />,
+              },
+              {
+                path: 'tasks/:id',
+                element: <TaskDetailsPage />,
+              },
+            ],
           },
           {
-            path: 'projects/create',
-            element: <ProjectCreatePage />,
+            element: (
+              <RequireRole
+                allowedRoles={[
+                  APP_ROLES.MANAGER,
+                  APP_ROLES.CHEF_DE_PROJET,
+                ]}
+              />
+            ),
+            children: [
+              {
+                path: 'chefs',
+                element: <ChefsListPage />,
+              },
+              {
+                path: 'chefs/:id',
+                element: <ChefDetailsPage />,
+              },
+              {
+                path: 'developers',
+                element: <DevelopersListPage />,
+              },
+              {
+                path: 'sla-projects',
+                element: <SlaProjectsListPage />,
+              },
+              {
+                path: 'sla-projects/:id',
+                element: <SlaProjectDetailsPage />,
+              },
+            ],
           },
           {
-            path: 'projects/:id',
-            element: <ProjectDetailsPage />,
-          },
-          {
-            path: 'projects/:id/edit',
-            element: <ProjectEditPage />,
-          },
-          {
-            path: 'projects/:id/files',
-            element: <ProjectFilesPage />,
-          },
-          {
-            path: 'managers',
-            element: <ManagersListPage />,
-          },
-          {
-            path: 'managers/create',
-            element: <ManagerCreatePage />,
-          },
-          {
-            path: 'managers/:id',
-            element: <ManagerDetailsPage />,
-          },
-          {
-            path: 'managers/:id/edit',
-            element: <ManagerEditPage />,
-          },
-          {
-            path: 'managers/:managerId/projects/create',
-            element: <ProjectCreatePage />,
-          },
-          {
-            path: 'managers/:managerId/projects/:projectId/assign',
-            element: <ProjectAssignPage />,
-          },
-          {
-            path: 'managers/:managerId/projects/:projectId',
-            element: <ProjectDetailsPage />,
-          },
-          {
-            path: 'chefs',
-            element: <ChefsListPage />,
-          },
-          {
-            path: 'chefs/create',
-            element: <ChefCreatePage />,
-          },
-          {
-            path: 'chefs/:id',
-            element: <ChefDetailsPage />,
-          },
-          {
-            path: 'chefs/:id/edit',
-            element: <ChefEditPage />,
-          },
-          {
-            path: 'developers',
-            element: <DevelopersListPage />,
-          },
-          {
-            path: 'developers/create',
-            element: <DeveloperCreatePage />,
-          },
-          {
-            path: 'developers/:id',
-            element: <DeveloperDetailsPage />,
-          },
-          {
-            path: 'developers/:id/edit',
-            element: <DeveloperEditPage />,
-          },
-          {
-            path: 'tasks',
-            element: <TasksListPage />,
-          },
-          {
-            path: 'tasks/create',
-            element: <TaskCreatePage />,
-          },
-          {
-            path: 'tasks/:id',
-            element: <TaskDetailsPage />,
-          },
-          {
-            path: 'tasks/:id/edit',
-            element: <TaskEditPage />,
-          },
-          {
-            path: 'sla-projects',
-            element: <SlaProjectsListPage />,
-          },
-          {
-            path: 'sla-projects/create',
-            element: <SlaProjectCreatePage />,
-          },
-          {
-            path: 'sla-projects/:id',
-            element: <SlaProjectDetailsPage />,
-          },
-          {
-            path: 'sla-projects/:id/edit',
-            element: <SlaProjectEditPage />,
+            element: <RequireRole allowedRoles={[APP_ROLES.MANAGER]} />,
+            children: [
+              {
+                path: 'projects/create',
+                element: <ProjectCreatePage />,
+              },
+              {
+                path: 'projects/:id/edit',
+                element: <ProjectEditPage />,
+              },
+              {
+                path: 'projects/:id/files',
+                element: <ProjectFilesPage />,
+              },
+              {
+                path: 'managers',
+                element: <ManagersListPage />,
+              },
+              {
+                path: 'managers/create',
+                element: <ManagerCreatePage />,
+              },
+              {
+                path: 'managers/:id',
+                element: <ManagerDetailsPage />,
+              },
+              {
+                path: 'managers/:id/edit',
+                element: <ManagerEditPage />,
+              },
+              {
+                path: 'managers/:managerId/projects/create',
+                element: <ProjectCreatePage />,
+              },
+              {
+                path: 'managers/:managerId/projects/:projectId/assign',
+                element: <ProjectAssignPage />,
+              },
+              {
+                path: 'managers/:managerId/projects/:projectId',
+                element: <ProjectDetailsPage />,
+              },
+              {
+                path: 'chefs/create',
+                element: <ChefCreatePage />,
+              },
+              {
+                path: 'chefs/:id/edit',
+                element: <ChefEditPage />,
+              },
+              {
+                path: 'developers/create',
+                element: <DeveloperCreatePage />,
+              },
+              {
+                path: 'developers/:id/edit',
+                element: <DeveloperEditPage />,
+              },
+              {
+                path: 'tasks/create',
+                element: <TaskCreatePage />,
+              },
+              {
+                path: 'tasks/:id/edit',
+                element: <TaskEditPage />,
+              },
+              {
+                path: 'sla-projects/create',
+                element: <SlaProjectCreatePage />,
+              },
+              {
+                path: 'sla-projects/:id/edit',
+                element: <SlaProjectEditPage />,
+              },
+            ],
           },
         ],
       },

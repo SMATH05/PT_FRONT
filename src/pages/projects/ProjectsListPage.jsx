@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import PageSection from '../../components/common/PageSection.jsx'
 import InfoCard from '../../components/ui/InfoCard.jsx'
 import { getProjects } from '../../services/projectService.js'
+import { useRoleAccess } from '../../auth/useRoleAccess.js'
 import {
   getApiErrorMessage,
   getCollection,
@@ -10,9 +11,16 @@ import {
 } from '../../utils/apiResponse.js'
 
 function ProjectsListPage() {
+  const { actorIds, canManageProjects, currentRole } = useRoleAccess()
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  const emptyStateMessage = currentRole === 'developer'
+    ? 'No projects are assigned to this developer yet.'
+    : currentRole === 'chef_de_projet'
+      ? 'No supervised projects were returned for this chef de projet yet.'
+      : 'No projects were returned by the API.'
 
   useEffect(() => {
     let active = true
@@ -20,7 +28,7 @@ function ProjectsListPage() {
     async function loadProjects() {
       try {
         setLoading(true)
-        const payload = await getProjects()
+        const payload = await getProjects({ actorIds, currentRole })
 
         if (!active) {
           return
@@ -44,7 +52,7 @@ function ProjectsListPage() {
     return () => {
       active = false
     }
-  }, [])
+  }, [actorIds, currentRole])
 
   return (
     <>
@@ -63,15 +71,17 @@ function ProjectsListPage() {
               <h2>Projects list</h2>
               <p>Navigate into each project and keep the manager flow intact.</p>
             </div>
-            <Link to="/projects/create" className="primary-button action-link">
-              Create project
-            </Link>
+            {canManageProjects ? (
+              <Link to="/projects/create" className="primary-button action-link">
+                Create project
+              </Link>
+            ) : null}
           </div>
 
           {loading ? <p className="feedback-message">Loading projects...</p> : null}
           {error ? <p className="feedback-message feedback-error">{error}</p> : null}
           {!loading && !error && projects.length === 0 ? (
-            <p className="empty-state">No projects were returned by the API.</p>
+            <p className="empty-state">{emptyStateMessage}</p>
           ) : null}
 
           {!loading && !error && projects.length > 0 ? (
@@ -109,13 +119,15 @@ function ProjectsListPage() {
                           <Link to={`/projects/${project.id}`} className="table-link">
                             View
                           </Link>
-                          <Link
-                            to={`/projects/${project.id}/edit`}
-                            className="table-link"
-                          >
-                            Edit
-                          </Link>
-                          {project.manager_id ? (
+                          {canManageProjects ? (
+                            <Link
+                              to={`/projects/${project.id}/edit`}
+                              className="table-link"
+                            >
+                              Edit
+                            </Link>
+                          ) : null}
+                          {canManageProjects && project.manager_id ? (
                             <Link
                               to={`/managers/${project.manager_id}/projects/${project.id}/assign`}
                               className="table-link"
@@ -123,12 +135,14 @@ function ProjectsListPage() {
                               Assign
                             </Link>
                           ) : null}
-                          <Link
-                            to={`/projects/${project.id}/files`}
-                            className="table-link"
-                          >
-                            Files
-                          </Link>
+                          {canManageProjects ? (
+                            <Link
+                              to={`/projects/${project.id}/files`}
+                              className="table-link"
+                            >
+                              Files
+                            </Link>
+                          ) : null}
                           {project.vscode_url ? (
                             <a
                               href={project.vscode_url}

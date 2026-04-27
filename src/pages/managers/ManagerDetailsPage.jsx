@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import PageSection from '../../components/common/PageSection.jsx'
 import InfoCard from '../../components/ui/InfoCard.jsx'
 import { getManager, getManagerProjects } from '../../services/managerService.js'
+import { useRoleAccess } from '../../auth/useRoleAccess.js'
 import {
   getApiErrorMessage,
   getCollection,
@@ -11,6 +12,7 @@ import {
 } from '../../utils/apiResponse.js'
 
 function ManagerDetailsPage() {
+  const { canManageProjects, canManagePeople } = useRoleAccess()
   const { id } = useParams()
   const [manager, setManager] = useState(null)
   const [projects, setProjects] = useState([])
@@ -132,9 +134,11 @@ function ManagerDetailsPage() {
                   <h2>Projects</h2>
                   <p>Manage projects assigned to this manager.</p>
                 </div>
-                <Link to={`/managers/${id}/projects/create`} className="primary-button action-link">
-                  Create project
-                </Link>
+                {canManageProjects ? (
+                  <Link to={`/managers/${id}/projects/create`} className="primary-button action-link">
+                    Create project
+                  </Link>
+                ) : null}
               </div>
 
               {projects.length > 0 ? (
@@ -166,12 +170,14 @@ function ManagerDetailsPage() {
                               <Link to={`/managers/${id}/projects/${project.id}`} className="table-link">
                                 View
                               </Link>
-                              <Link
-                                to={`/managers/${id}/projects/${project.id}/assign`}
-                                className="table-link"
-                              >
-                                Assign
-                              </Link>
+                              {canManageProjects ? (
+                                <Link
+                                  to={`/managers/${id}/projects/${project.id}/assign`}
+                                  className="table-link"
+                                >
+                                  Assign
+                                </Link>
+                              ) : null}
                             </div>
                           </td>
                         </tr>
@@ -184,11 +190,13 @@ function ManagerDetailsPage() {
               )}
             </InfoCard>
 
-            <InfoCard wide>
-              <Link to={`/managers/${id}/edit`} className="primary-button action-link">
-                Edit manager
-              </Link>
-            </InfoCard>
+            {canManagePeople ? (
+              <InfoCard wide>
+                <Link to={`/managers/${id}/edit`} className="primary-button action-link">
+                  Edit manager
+                </Link>
+              </InfoCard>
+            ) : null}
           </>
         ) : null}
       </section>

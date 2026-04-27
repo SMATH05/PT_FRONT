@@ -3,7 +3,12 @@ import { Link } from 'react-router-dom'
 import PageSection from '../../components/common/PageSection.jsx'
 import InfoCard from '../../components/ui/InfoCard.jsx'
 import { getManagers } from '../../services/managerService.js'
-import { getCollection, getCount, getText } from '../../utils/apiResponse.js'
+import {
+  getApiErrorMessage,
+  getCollection,
+  getCount,
+  getText,
+} from '../../utils/apiResponse.js'
 
 function ManagersListPage() {
   const [managers, setManagers] = useState([])
@@ -24,7 +29,7 @@ function ManagersListPage() {
         setManagers(getCollection(payload))
       } catch (loadError) {
         if (active) {
-          setError(loadError.response?.data?.message ?? 'Unable to load managers.')
+          setError(getApiErrorMessage(loadError, 'Unable to load managers.'))
         }
       } finally {
         if (active) {

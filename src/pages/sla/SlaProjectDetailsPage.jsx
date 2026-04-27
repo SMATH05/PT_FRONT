@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import PageSection from '../../components/common/PageSection.jsx'
 import InfoCard from '../../components/ui/InfoCard.jsx'
+import { useRoleAccess } from '../../auth/useRoleAccess.js'
 import { getProject, getProjectSla } from '../../services/projectService.js'
 import {
   getApiErrorMessage,
@@ -10,6 +11,7 @@ import {
 } from '../../utils/apiResponse.js'
 
 function SlaProjectDetailsPage() {
+  const { canManageSla } = useRoleAccess()
   const { id } = useParams()
   const [project, setProject] = useState(null)
   const [sla, setSla] = useState(null)
@@ -92,12 +94,14 @@ function SlaProjectDetailsPage() {
 
             <InfoCard wide>
               <div className="form-actions">
-                <Link
-                  to={`/sla-projects/${id}/edit`}
-                  className="primary-button action-link"
-                >
-                  {sla ? 'Edit SLA' : 'Create SLA'}
-                </Link>
+                {canManageSla ? (
+                  <Link
+                    to={`/sla-projects/${id}/edit`}
+                    className="primary-button action-link"
+                  >
+                    {sla ? 'Edit SLA' : 'Create SLA'}
+                  </Link>
+                ) : null}
                 <Link
                   to={`/projects/${id}`}
                   className="ghost-button action-link"

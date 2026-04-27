@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import PageSection from '../../components/common/PageSection.jsx'
 import InfoCard from '../../components/ui/InfoCard.jsx'
 import { getDeveloper } from '../../services/developerService.js'
+import { useRoleAccess } from '../../auth/useRoleAccess.js'
 import {
   getApiErrorMessage,
   getCollection,
@@ -11,6 +12,7 @@ import {
 } from '../../utils/apiResponse.js'
 
 function DeveloperDetailsPage() {
+  const { canManagePeople } = useRoleAccess()
   const { id } = useParams()
   const [developer, setDeveloper] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -109,7 +111,7 @@ function DeveloperDetailsPage() {
                     <div key={task.id}>
                       <p className="session-label">{getText(task.title, `Task #${task.id}`)}</p>
                       <p className="session-value">
-                        {getText(task.role, 'Developer')} · {getText(task.status)}
+                        {getText(task.role, 'Developer')} / {getText(task.status)}
                       </p>
                     </div>
                   ))}
@@ -119,14 +121,16 @@ function DeveloperDetailsPage() {
               )}
             </InfoCard>
 
-            <InfoCard wide>
-              <Link
-                to={`/developers/${id}/edit`}
-                className="primary-button action-link"
-              >
-                Edit developer
-              </Link>
-            </InfoCard>
+            {canManagePeople ? (
+              <InfoCard wide>
+                <Link
+                  to={`/developers/${id}/edit`}
+                  className="primary-button action-link"
+                >
+                  Edit developer
+                </Link>
+              </InfoCard>
+            ) : null}
           </>
         ) : null}
       </section>

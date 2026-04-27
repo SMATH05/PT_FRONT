@@ -1,18 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { setAxiosClientToken } from '../api/axiosClient.js'
+import { checkAuth } from '../services/authService.js'
 import { AuthContext } from './AuthContext.js'
 import {
   getKeycloakClient,
   hasKeycloakConfig,
   initKeycloak,
 } from './keycloak.js'
-
-function normalizeRole(role) {
-  return String(role ?? '')
-    .trim()
-    .toLowerCase()
-    .replace(/[\s-]+/g, '_')
-}
+import { filterAppRoles, normalizeRole } from './roles.js'
 
 function extractRoles(tokenParsed) {
   const realmRoles = tokenParsed?.realm_access?.roles ?? []
@@ -22,16 +17,30 @@ function extractRoles(tokenParsed) {
   return [...new Set([...realmRoles, ...resourceRoles].map(normalizeRole).filter(Boolean))]
 }
 
-function buildProfile(tokenParsed) {
+function normalizeActorIds(actorIds) {
   return {
-    email: tokenParsed?.email ?? 'Unavailable',
+    chef_de_projet: Number.isInteger(actorIds?.chef_de_projet)
+      ? actorIds.chef_de_projet
+      : null,
+    developer: Number.isInteger(actorIds?.developer) ? actorIds.developer : null,
+    manager: Number.isInteger(actorIds?.manager) ? actorIds.manager : null,
+  }
+}
+
+function buildProfile(tokenParsed, user = null) {
+  return {
+    actorIds: normalizeActorIds(user?.actor_ids),
+    email: user?.email ?? tokenParsed?.email ?? 'Unavailable',
     name:
+      user?.name ??
       tokenParsed?.name ??
+      user?.given_name ??
       tokenParsed?.given_name ??
+      user?.username ??
       tokenParsed?.preferred_username ??
       'Unavailable',
-    roles: extractRoles(tokenParsed),
-    username: tokenParsed?.preferred_username ?? 'Unavailable',
+    roles: filterAppRoles(user?.roles ?? extractRoles(tokenParsed)),
+    username: user?.username ?? tokenParsed?.preferred_username ?? 'Unavailable',
   }
 }
 
@@ -120,6 +129,41 @@ export function AuthProvider({ children }) {
 
     setAxiosClientToken('')
   }, [token])
+
+  useEffect(() => {
+    let active = true
+
+    if (!authenticated || !token) {
+      return undefined
+    }
+
+    async function syncBackendProfile() {
+      try {
+        const payload = await checkAuth()
+
+        if (!active) {
+          return
+        }
+
+        setProfile(buildProfile(getKeycloakClient()?.tokenParsed, payload?.user))
+      } catch {
+        if (!active) {
+          return
+        }
+
+        setProfile((currentProfile) => ({
+          ...buildProfile(getKeycloakClient()?.tokenParsed),
+          actorIds: currentProfile.actorIds,
+        }))
+      }
+    }
+
+    syncBackendProfile()
+
+    return () => {
+      active = false
+    }
+  }, [authenticated, token])
 
   useEffect(() => {
     const client = getKeycloakClient()

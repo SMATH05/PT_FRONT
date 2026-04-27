@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom'
 import PageSection from '../../components/common/PageSection.jsx'
 import InfoCard from '../../components/ui/InfoCard.jsx'
 import { getChefsDeProjet } from '../../services/chefDeProjetService.js'
+import { useRoleAccess } from '../../auth/useRoleAccess.js'
 import { getApiErrorMessage, getCollection, getText } from '../../utils/apiResponse.js'
 
 function ChefsListPage() {
+  const { canManagePeople } = useRoleAccess()
   const [chefs, setChefs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -55,9 +57,11 @@ function ChefsListPage() {
               <h2>Project leads</h2>
               <p>List the chefs de projet responsible for project delivery.</p>
             </div>
-            <Link to="/chefs/create" className="primary-button action-link">
-              Create chef de projet
-            </Link>
+            {canManagePeople ? (
+              <Link to="/chefs/create" className="primary-button action-link">
+                Create chef de projet
+              </Link>
+            ) : null}
           </div>
 
           {loading ? <p className="feedback-message">Loading chefs...</p> : null}
@@ -85,9 +89,11 @@ function ChefsListPage() {
                           <Link to={`/chefs/${chef.id}`} className="table-link">
                             View
                           </Link>
-                          <Link to={`/chefs/${chef.id}/edit`} className="table-link">
-                            Edit
-                          </Link>
+                          {canManagePeople ? (
+                            <Link to={`/chefs/${chef.id}/edit`} className="table-link">
+                              Edit
+                            </Link>
+                          ) : null}
                         </div>
                       </td>
                     </tr>

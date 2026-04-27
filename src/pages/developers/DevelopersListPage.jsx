@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import PageSection from '../../components/common/PageSection.jsx'
 import InfoCard from '../../components/ui/InfoCard.jsx'
 import { getDevelopers } from '../../services/developerService.js'
+import { useRoleAccess } from '../../auth/useRoleAccess.js'
 import {
   getApiErrorMessage,
   getCollection,
@@ -10,6 +11,7 @@ import {
 } from '../../utils/apiResponse.js'
 
 function DevelopersListPage() {
+  const { canManagePeople } = useRoleAccess()
   const [developers, setDevelopers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -59,9 +61,11 @@ function DevelopersListPage() {
               <h2>Developers list</h2>
               <p>Use this page before assigning developers to projects and tasks.</p>
             </div>
-            <Link to="/developers/create" className="primary-button action-link">
-              Create developer
-            </Link>
+            {canManagePeople ? (
+              <Link to="/developers/create" className="primary-button action-link">
+                Create developer
+              </Link>
+            ) : null}
           </div>
 
           {loading ? <p className="feedback-message">Loading developers...</p> : null}
@@ -89,12 +93,14 @@ function DevelopersListPage() {
                           <Link to={`/developers/${developer.id}`} className="table-link">
                             View
                           </Link>
-                          <Link
-                            to={`/developers/${developer.id}/edit`}
-                            className="table-link"
-                          >
-                            Edit
-                          </Link>
+                          {canManagePeople ? (
+                            <Link
+                              to={`/developers/${developer.id}/edit`}
+                              className="table-link"
+                            >
+                              Edit
+                            </Link>
+                          ) : null}
                         </div>
                       </td>
                     </tr>

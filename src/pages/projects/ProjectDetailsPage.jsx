@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import PageSection from '../../components/common/PageSection.jsx'
 import InfoCard from '../../components/ui/InfoCard.jsx'
+import { useRoleAccess } from '../../auth/useRoleAccess.js'
 import {
   getProject,
   getProjectProgress,
@@ -29,6 +30,7 @@ function formatProgress(progress) {
 }
 
 function ProjectDetailsPage() {
+  const { canManageProjects, canViewSla } = useRoleAccess()
   const { id, managerId, projectId } = useParams()
   const resolvedProjectId = id ?? projectId
   const [project, setProject] = useState(null)
@@ -227,13 +229,15 @@ function ProjectDetailsPage() {
                   </p>
                 </div>
                 <div className="toolbar-actions">
-                  <Link
-                    to={`/projects/${resolvedProjectId}/edit`}
-                    className="primary-button action-link"
-                  >
-                    Edit project
-                  </Link>
-                  {resolvedManagerId ? (
+                  {canManageProjects ? (
+                    <Link
+                      to={`/projects/${resolvedProjectId}/edit`}
+                      className="primary-button action-link"
+                    >
+                      Edit project
+                    </Link>
+                  ) : null}
+                  {canManageProjects && resolvedManagerId ? (
                     <Link
                       to={`/managers/${resolvedManagerId}/projects/${resolvedProjectId}/assign`}
                       className="ghost-button action-link"
@@ -241,12 +245,14 @@ function ProjectDetailsPage() {
                       Assign team
                     </Link>
                   ) : null}
-                  <Link
-                    to={`/projects/${resolvedProjectId}/files`}
-                    className="ghost-button action-link"
-                  >
-                    Manage files
-                  </Link>
+                  {canManageProjects ? (
+                    <Link
+                      to={`/projects/${resolvedProjectId}/files`}
+                      className="ghost-button action-link"
+                    >
+                      Manage files
+                    </Link>
+                  ) : null}
                   {project.vscode_url ? (
                     <a
                       href={project.vscode_url}
@@ -264,12 +270,14 @@ function ProjectDetailsPage() {
                       Copy workspace path
                     </button>
                   ) : null}
-                  <Link
-                    to={`/sla-projects/${resolvedProjectId}`}
-                    className="ghost-button action-link"
-                  >
-                    SLA
-                  </Link>
+                  {canViewSla ? (
+                    <Link
+                      to={`/sla-projects/${resolvedProjectId}`}
+                      className="ghost-button action-link"
+                    >
+                      SLA
+                    </Link>
+                  ) : null}
                 </div>
               </div>
             </InfoCard>
