@@ -6,11 +6,28 @@ export const APP_ROLES = {
 
 export const APP_ROLE_VALUES = Object.values(APP_ROLES)
 
+const ROLE_ALIASES = {
+  chef: APP_ROLES.CHEF_DE_PROJET,
+  chef_de_projets: APP_ROLES.CHEF_DE_PROJET,
+  chef_projet: APP_ROLES.CHEF_DE_PROJET,
+  chefprojet: APP_ROLES.CHEF_DE_PROJET,
+  dev: APP_ROLES.DEVELOPER,
+  developper: APP_ROLES.DEVELOPER,
+  developpeur: APP_ROLES.DEVELOPER,
+  developer_role: APP_ROLES.DEVELOPER,
+  devloper: APP_ROLES.DEVELOPER,
+  project_manager: APP_ROLES.MANAGER,
+}
+
 export function normalizeRole(role) {
-  return String(role ?? '')
+  const normalizedRole = String(role ?? '')
     .trim()
     .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[\s-]+/g, '_')
+
+  return ROLE_ALIASES[normalizedRole] ?? normalizedRole
 }
 
 export function hasRole(roles, role) {
@@ -28,6 +45,24 @@ export function filterAppRoles(roles) {
       .map(normalizeRole)
       .filter((role) => APP_ROLE_VALUES.includes(role)),
   )]
+}
+
+export function inferRolesFromActorIds(actorIds) {
+  const inferredRoles = []
+
+  if (actorIds?.manager) {
+    inferredRoles.push(APP_ROLES.MANAGER)
+  }
+
+  if (actorIds?.chef_de_projet) {
+    inferredRoles.push(APP_ROLES.CHEF_DE_PROJET)
+  }
+
+  if (actorIds?.developer) {
+    inferredRoles.push(APP_ROLES.DEVELOPER)
+  }
+
+  return inferredRoles
 }
 
 export function getPrimaryAppRole(roles) {

@@ -1,17 +1,140 @@
 :root {
-  font-family: 'Avenir Next', 'Trebuchet MS', sans-serif;
+  font-family: Bahnschrift, 'Segoe UI Variable Text', 'Trebuchet MS', sans-serif;
+  --bg-canvas: #eef7ff;
+  --bg-surface: #ffffff;
+  --border-default: #d3e4f4;
+  --fg-default: #14314a;
+  --fg-subtle: #40607d;
+  --fg-muted: #6f8aa4;
+  --accent-blue: #53d7ff;
+  --accent-green: #16c79a;
+  --accent-pink: #ff8ec4;
+  --accent-gold: #ffc971;
+  --accent-coral: #ffa58a;
+  --accent-danger: #f85149;
+  --app-bg-start: #f6fbff;
+  --app-bg-end: #edf6ff;
+  --app-spot-a: rgba(120, 211, 255, 0.2);
+  --app-spot-b: rgba(255, 183, 206, 0.18);
+  --app-spot-c: rgba(255, 220, 154, 0.22);
+  --surface-card-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(245, 250, 255, 0.95)),
+    radial-gradient(circle at top right, rgba(126, 218, 255, 0.12), transparent 38%);
+  --surface-elevated-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(247, 251, 255, 0.94)),
+    radial-gradient(circle at top right, rgba(126, 218, 255, 0.15), transparent 36%);
+  --surface-soft-bg: rgba(255, 255, 255, 0.66);
+  --surface-chip-bg: rgba(255, 255, 255, 0.72);
+  --surface-chip-border: rgba(120, 172, 214, 0.16);
+  --surface-nav-bg: rgba(255, 255, 255, 0.72);
+  --surface-input-bg: rgba(255, 255, 255, 0.82);
+  --surface-stage-grid: rgba(137, 175, 205, 0.14);
+  --surface-panel-border: rgba(120, 172, 214, 0.18);
+  --shadow-soft: 0 20px 48px rgba(91, 138, 174, 0.12);
+  --shadow-strong: 0 20px 50px rgba(80, 119, 152, 0.14);
+  --button-gradient: linear-gradient(135deg, #ff8ec4 0%, #ffb466 48%, #63cfff 100%);
+  --button-shadow: 0 16px 30px rgba(132, 196, 236, 0.2);
+  --aura-one: rgba(123, 218, 255, 0.22);
+  --aura-two: rgba(255, 186, 213, 0.18);
+  --hero-ribbon-a: rgba(255, 176, 201, 0.3);
+  --hero-ribbon-b: rgba(123, 215, 255, 0.26);
+  --hero-ribbon-c: rgba(255, 220, 146, 0.3);
+  --motion-duration-multiplier: 1;
   line-height: 1.5;
   font-weight: 400;
-  color: #eef0ff;
+  color: var(--fg-default);
   background:
-    radial-gradient(circle at 15% 20%, rgba(123, 92, 255, 0.2), transparent 28%),
-    radial-gradient(circle at 82% 12%, rgba(71, 203, 255, 0.14), transparent 24%),
-    linear-gradient(180deg, #080914 0%, #0b1020 48%, #090d19 100%);
+    radial-gradient(circle at top left, var(--app-spot-a), transparent 24%),
+    radial-gradient(circle at 85% 20%, var(--app-spot-b), transparent 22%),
+    radial-gradient(circle at bottom right, var(--app-spot-c), transparent 24%),
+    linear-gradient(180deg, var(--app-bg-start) 0%, var(--app-bg-end) 100%);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color-scheme: dark;
+  color-scheme: light;
+}
+
+html[data-theme='sunrise'] {
+  --fg-default: #4d2c32;
+  --fg-subtle: #76515b;
+  --fg-muted: #9b7480;
+  --accent-blue: #ff9fc0;
+  --accent-green: #ffb66c;
+  --accent-pink: #ff8db4;
+  --accent-gold: #ffd480;
+  --accent-coral: #ffa17d;
+  --app-bg-start: #fff9f7;
+  --app-bg-end: #fff1e7;
+  --app-spot-a: rgba(255, 190, 205, 0.24);
+  --app-spot-b: rgba(255, 223, 161, 0.24);
+  --app-spot-c: rgba(255, 176, 209, 0.22);
+  --button-gradient: linear-gradient(135deg, #ff88b8 0%, #ffb865 58%, #ffd77a 100%);
+  --button-shadow: 0 16px 30px rgba(255, 171, 146, 0.2);
+}
+
+html[data-theme='lagoon'] {
+  --fg-default: #153d49;
+  --fg-subtle: #406d77;
+  --fg-muted: #669099;
+  --accent-blue: #55d8d0;
+  --accent-green: #47cb9b;
+  --accent-pink: #7fdcff;
+  --accent-gold: #ffe18b;
+  --accent-coral: #92ffe1;
+  --app-bg-start: #f4fffe;
+  --app-bg-end: #e8fbf8;
+  --app-spot-a: rgba(85, 216, 208, 0.22);
+  --app-spot-b: rgba(159, 255, 214, 0.18);
+  --app-spot-c: rgba(175, 233, 255, 0.2);
+  --button-gradient: linear-gradient(135deg, #4fd7cd 0%, #68d8ff 52%, #95ffd5 100%);
+}
+
+html[data-theme='aurora'] {
+  --fg-default: #2d3157;
+  --fg-subtle: #585e8b;
+  --fg-muted: #8188b2;
+  --accent-blue: #92b7ff;
+  --accent-green: #8ce0d2;
+  --accent-pink: #dca8ff;
+  --accent-gold: #ffd49f;
+  --accent-coral: #f4b4d6;
+  --app-bg-start: #faf9ff;
+  --app-bg-end: #eff3ff;
+  --app-spot-a: rgba(146, 183, 255, 0.22);
+  --app-spot-b: rgba(220, 168, 255, 0.18);
+  --app-spot-c: rgba(255, 212, 159, 0.2);
+  --button-gradient: linear-gradient(135deg, #c5a4ff 0%, #98bbff 56%, #8ee2d4 100%);
+}
+
+html[data-surface='soft'] {
+  --surface-card-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(249, 252, 255, 0.98));
+  --surface-elevated-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(250, 252, 255, 1));
+  --surface-soft-bg: rgba(255, 255, 255, 0.8);
+  --surface-chip-bg: rgba(255, 255, 255, 0.84);
+  --surface-nav-bg: rgba(255, 255, 255, 0.84);
+  --surface-input-bg: rgba(255, 255, 255, 0.92);
+}
+
+html[data-surface='solid'] {
+  --surface-card-bg: linear-gradient(180deg, #ffffff, #f7fbff);
+  --surface-elevated-bg: linear-gradient(180deg, #ffffff, #f8fbff);
+  --surface-soft-bg: rgba(255, 255, 255, 0.92);
+  --surface-chip-bg: rgba(255, 255, 255, 0.94);
+  --surface-nav-bg: rgba(255, 255, 255, 0.94);
+  --surface-input-bg: #ffffff;
+  --shadow-soft: 0 18px 38px rgba(91, 138, 174, 0.08);
+  --shadow-strong: 0 18px 40px rgba(80, 119, 152, 0.1);
+}
+
+html[data-motion='calm'] {
+  --motion-duration-multiplier: 1.35;
+}
+
+html[data-motion='vivid'] {
+  --motion-duration-multiplier: 0.78;
 }
 
 *,
@@ -28,7 +151,12 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: transparent;
+  color: var(--fg-default);
+  background:
+    radial-gradient(circle at top left, var(--app-spot-a), transparent 24%),
+    radial-gradient(circle at 85% 20%, var(--app-spot-b), transparent 22%),
+    radial-gradient(circle at bottom right, var(--app-spot-c), transparent 24%),
+    linear-gradient(180deg, var(--app-bg-start) 0%, var(--app-bg-end) 100%);
 }
 
 button,
@@ -44,6 +172,7 @@ button {
 
 a {
   color: inherit;
+  text-decoration: none;
 }
 
 code,
@@ -66,19 +195,20 @@ h1,
 h2,
 h3 {
   color: inherit;
-  line-height: 1.05;
+  line-height: 1.12;
 }
 
 h1 {
-  font-size: clamp(2.4rem, 4vw, 4.5rem);
+  font-size: clamp(2.2rem, 4vw, 4.2rem);
   margin-bottom: 0.75rem;
 }
 
 h2 {
-  font-size: clamp(1.25rem, 2vw, 1.7rem);
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
   margin-bottom: 0.85rem;
 }
 
 p {
   font-size: 0.98rem;
+  margin-bottom: 0;
 }

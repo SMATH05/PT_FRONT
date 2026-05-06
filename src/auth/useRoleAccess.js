@@ -8,16 +8,9 @@ export function useRoleAccess() {
   return useMemo(() => {
     const roles = profile.roles ?? []
     const actorIds = profile.actorIds ?? {}
-    const actorResolutionReady = Object.values(actorIds).some((value) => value !== null)
-    const isManager =
-      hasRole(roles, APP_ROLES.MANAGER) &&
-      (!actorResolutionReady || actorIds.manager !== null)
-    const isDeveloper =
-      hasRole(roles, APP_ROLES.DEVELOPER) &&
-      (!actorResolutionReady || actorIds.developer !== null)
-    const isChef =
-      hasRole(roles, APP_ROLES.CHEF_DE_PROJET) &&
-      (!actorResolutionReady || actorIds.chef_de_projet !== null)
+    const isManager = hasRole(roles, APP_ROLES.MANAGER)
+    const isDeveloper = hasRole(roles, APP_ROLES.DEVELOPER)
+    const isChef = hasRole(roles, APP_ROLES.CHEF_DE_PROJET)
     const availableRoles = [
       isManager ? APP_ROLES.MANAGER : '',
       isChef ? APP_ROLES.CHEF_DE_PROJET : '',
