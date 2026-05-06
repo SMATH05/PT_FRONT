@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import PageSection from '../components/common/PageSection.jsx'
 import InfoCard from '../components/ui/InfoCard.jsx'
 import StatusCard from '../components/ui/StatusCard.jsx'
@@ -29,7 +30,114 @@ const WINDOW_OPTIONS = [
 ]
 
 const STATUS_ORDER = ['pending', 'in_progress', 'done', 'validated']
-const STATUS_COLORS = ['#6ad7ff', '#7d6bff', '#b85dff', '#56f0c5']
+const STATUS_COLORS = ['#53d7ff', '#16c79a', '#ff8a5b', '#ffd166']
+
+const FEATURE_PANELS = [
+  {
+    title: 'Projects, progress, and files',
+    text: 'The platform manages project creation, progress tracking, project files, detail pages, exports, and developer assignments.',
+    accent: 'Cyan',
+  },
+  {
+    title: 'Managers and team assignment',
+    text: 'Managers can create projects, assign developers and chefs de projet, review statistics, and organise staffing from one flow.',
+    accent: 'Mint',
+  },
+  {
+    title: 'Tasks and delivery execution',
+    text: 'Tasks move from pending to validated with status updates, developer assignment, filtering by role, and execution follow-up.',
+    accent: 'Coral',
+  },
+  {
+    title: 'SLA, exports, and role access',
+    text: 'SLA projects, project exports, personal profiles, and protected routes are already connected to Keycloak and the PT_BACK API.',
+    accent: 'Gold',
+  },
+]
+
+const WORKFLOW_STEPS = [
+  {
+    title: 'Manager creates the project',
+    text: 'A manager opens the project, prepares assignment data, and links the right people to the right scope.',
+  },
+  {
+    title: 'Chef de projet coordinates delivery',
+    text: 'The chef de projet follows tasks, project rhythm, and validation flow while keeping delivery aligned.',
+  },
+  {
+    title: 'Developers execute and update',
+    text: 'Developers follow their own projects, tasks, timeline, and progress updates directly from the workspace.',
+  },
+]
+
+const ROLE_SPOTLIGHTS = [
+  {
+    role: 'Manager',
+    summary: 'Creates projects, assigns teams, reviews exports, and pilots project-level statistics.',
+  },
+  {
+    role: 'Chef de projet',
+    summary: 'Coordinates projects, supervises execution, and validates delivery progress.',
+  },
+  {
+    role: 'Developer',
+    summary: 'Follows assigned tasks, active projects, personal workload, and execution timeline.',
+  },
+]
+
+const WORKSPACE_SYMBOL_BADGES = [
+  { label: 'Projects', tone: 'cyan' },
+  { label: 'Tasks', tone: 'mint' },
+  { label: 'SLA', tone: 'gold' },
+  { label: 'Files', tone: 'coral' },
+  { label: 'Team', tone: 'cyan' },
+  { label: 'Exports', tone: 'mint' },
+]
+
+const FALLBACK_BOARD_CARDS = [
+  {
+    id: 'brief',
+    title: 'Create the project record',
+    meta: 'Project details, progress, and scope',
+    status: 'pending',
+    date: 'Kickoff',
+  },
+  {
+    id: 'assign',
+    title: 'Assign chefs and developers',
+    meta: 'Manager assignment flow',
+    status: 'pending',
+    date: 'Staffing',
+  },
+  {
+    id: 'track',
+    title: 'Track tasks and progress',
+    meta: 'Status, execution, and follow-up',
+    status: 'in_progress',
+    date: 'Live',
+  },
+  {
+    id: 'validate',
+    title: 'Validate task completion',
+    meta: 'Chef de projet review flow',
+    status: 'in_progress',
+    date: 'Review',
+  },
+  {
+    id: 'sla',
+    title: 'Review SLA project coverage',
+    meta: 'SLA governance and compliance',
+    status: 'validated',
+    date: 'Secure',
+  },
+  {
+    id: 'export',
+    title: 'Export project information',
+    meta: 'Report, archive, and handoff',
+    status: 'done',
+    date: 'Done',
+  },
+]
 
 function formatCompactNumber(value) {
   return new Intl.NumberFormat('en-US', {
@@ -88,6 +196,22 @@ function normalizeStatus(value) {
   return String(value ?? 'pending').trim().toLowerCase()
 }
 
+function getStatusLabel(status) {
+  return status.replace('_', ' ')
+}
+
+function getBoardColumn(status) {
+  if (status === 'done' || status === 'validated') {
+    return 'done'
+  }
+
+  if (status === 'in_progress') {
+    return 'doing'
+  }
+
+  return 'todo'
+}
+
 function mapSettledCollections(results) {
   return results.map((result) => (result.status === 'fulfilled' ? getCollection(result.value) : []))
 }
@@ -99,7 +223,6 @@ function HomePage() {
     initialized,
     keycloakReady,
     login,
-    logout,
     profile,
   } = useAuth()
   const { actorIds, canViewPeople, currentRole, isChef, isManager } = useRoleAccess()
@@ -299,7 +422,7 @@ function HomePage() {
         const rightDate = new Date(right.updated_at ?? right.created_at ?? 0).getTime()
         return rightDate - leftDate
       })
-      .slice(0, 5)
+      .slice(0, 6)
       .map((task) => ({
         id: task.id,
         title: getText(task.title, `Task #${task.id ?? 'n/a'}`),
@@ -355,7 +478,7 @@ function HomePage() {
     const total = Math.max(taskCount, 1)
     let cursor = 0
 
-    const segments = STATUS_ORDER.map((status, index) => {
+    return STATUS_ORDER.map((status, index) => {
       const value = statusCounts[status]
       const percentage = (value / total) * 100
       const segment = {
@@ -369,13 +492,81 @@ function HomePage() {
       cursor += percentage
       return segment
     })
-
-    return segments
   }, [statusCounts, taskCount])
 
   const distributionBackground = `conic-gradient(${distribution
     .map((segment) => `${segment.color} ${segment.start}% ${segment.end}%`)
     .join(', ')})`
+
+  const boardColumns = useMemo(() => {
+    const liveCards = recentTasks.map((task, index) => ({
+      id: task.id ?? `task-${index}`,
+      title: task.title,
+      meta: task.project,
+      status: task.status,
+      date: task.date,
+    }))
+
+    const sourceCards = liveCards.length > 0 ? liveCards : FALLBACK_BOARD_CARDS
+    const groupedCards = {
+      todo: [],
+      doing: [],
+      done: [],
+    }
+
+    sourceCards.forEach((card) => {
+      const column = getBoardColumn(card.status)
+      if (groupedCards[column].length < 3) {
+        groupedCards[column].push(card)
+      }
+    })
+
+    FALLBACK_BOARD_CARDS.forEach((card) => {
+      const column = getBoardColumn(card.status)
+      if (groupedCards[column].length < 2) {
+        groupedCards[column].push(card)
+      }
+    })
+
+    return [
+      {
+        id: 'todo',
+        label: 'To plan',
+        tone: 'cyan',
+        cards: groupedCards.todo,
+      },
+      {
+        id: 'doing',
+        label: 'In motion',
+        tone: 'mint',
+        cards: groupedCards.doing,
+      },
+      {
+        id: 'done',
+        label: 'Delivered',
+        tone: 'coral',
+        cards: groupedCards.done,
+      },
+    ]
+  }, [recentTasks])
+
+  const spotlightStats = useMemo(() => ([
+    {
+      label: authenticated ? 'Live projects' : 'Main modules',
+      value: authenticated ? formatCompactNumber(projectCount) : '08',
+      detail: authenticated ? 'Loaded from backend data' : 'Projects, tasks, people, files, SLA, assignments',
+    },
+    {
+      label: authenticated ? 'Team members' : 'Access roles',
+      value: authenticated ? formatCompactNumber(deliveryPeople) : '03',
+      detail: authenticated ? 'Managers, chefs, developers' : 'Manager, chef de projet, developer',
+    },
+    {
+      label: authenticated ? 'Task completion' : 'Security and API',
+      value: authenticated ? formatPercent(completionRate) : 'PT',
+      detail: authenticated ? 'From your current task statuses' : 'Keycloak auth and PT_BACK endpoints',
+    },
+  ]), [authenticated, completionRate, deliveryPeople, projectCount])
 
   const focusSummary = {
     portfolio: 'Track total program scope, SLA coverage, and project density.',
@@ -391,19 +582,344 @@ function HomePage() {
         ? 'warning'
         : 'neutral'
 
+  const welcomeName = profile.name ?? profile.username ?? 'team'
+
+  if (!authenticated) {
+    return (
+      <>
+        <PageSection className="hero-panel immersive-landing">
+          <div className="landing-ambient landing-ambient-one" aria-hidden="true" />
+          <div className="landing-ambient landing-ambient-two" aria-hidden="true" />
+          <div className="landing-ambient landing-ambient-three" aria-hidden="true" />
+
+          <div className="landing-hero-grid">
+            <div className="landing-copy-column">
+              <p className="eyebrow">PT project command center</p>
+              <h2 className="landing-mega-title">
+                Une entree claire pour comprendre le site avant d entrer dans le workspace.
+              </h2>
+              <p className="landing-mega-lead">
+                Cette plateforme permet de gerer les projets, suivre les taches, organiser developers et chefs de projet, piloter les managers, gerer les fichiers projet, suivre les SLA et acceder aux vues protegees selon le role.
+              </p>
+
+              <div className="landing-actions">
+                <Button
+                  onClick={login}
+                  disabled={!keycloakReady || !initialized}
+                >
+                  Entrer dans le workspace
+                </Button>
+                <a href="#workspace-zone" className="ghost-button landing-link-button">
+                  Voir la zone de travail
+                </a>
+              </div>
+
+              <div className="landing-route-row">
+                <span className="landing-route-chip">Projects</span>
+                <span className="landing-route-chip">Tasks</span>
+                <span className="landing-route-chip">Developers</span>
+                <span className="landing-route-chip">Chefs de projet</span>
+                <span className="landing-route-chip">Managers</span>
+                <span className="landing-route-chip">SLA Projects</span>
+                <span className="landing-route-chip">Project Files</span>
+                <span className="landing-route-chip">Assignments</span>
+                <span className="landing-route-chip">Exports</span>
+              </div>
+            </div>
+
+            <div className="landing-command-wall landing-visual-stage">
+              <div className="landing-visual-orbit">
+                <div className="landing-orbit-ring landing-orbit-ring-one" />
+                <div className="landing-orbit-ring landing-orbit-ring-two" />
+                <div className="landing-orbit-core">
+                  <span>PT</span>
+                  <strong>Flow</strong>
+                  <small>Projects, people, delivery</small>
+                </div>
+              </div>
+
+              <article className="landing-floating-panel landing-floating-panel-main">
+                <div className="landing-floating-panel-head">
+                  <span className="landing-floating-badge">Live preview</span>
+                  <strong>Real product scope</strong>
+                </div>
+                <p>Projects, tasks, assignments, files, statistics, timelines, exports, and protected access already exist in the real application flow.</p>
+                <div className="landing-mini-bars">
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              </article>
+
+              <article className="landing-floating-panel landing-floating-panel-side">
+                <div className="landing-floating-panel-head">
+                  <strong>Roles</strong>
+                </div>
+                <div className="landing-mini-pill-row">
+                  {ROLE_SPOTLIGHTS.map((item) => (
+                    <span key={item.role} className="landing-mini-pill">
+                      {item.role}
+                    </span>
+                  ))}
+                </div>
+              </article>
+
+              <div className="landing-spotlight-rail landing-spotlight-rail-hero">
+                {spotlightStats.map((item) => (
+                  <div key={item.label} className="landing-spotlight-item">
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
+                    <small>{item.detail}</small>
+                  </div>
+                ))}
+              </div>
+
+              <div className="landing-process-panel landing-process-panel-hero">
+                <div className="landing-process-header">
+                  <div>
+                    <p className="panel-kicker">Operational flow</p>
+                    <h3>Du cadrage jusqu a la livraison</h3>
+                  </div>
+                </div>
+                <div className="landing-process-lane">
+                  {WORKFLOW_STEPS.map((step, index) => (
+                    <article key={step.title} className="landing-process-step">
+                      <span className="landing-process-index">0{index + 1}</span>
+                      <strong>{step.title}</strong>
+                      <p>{step.text}</p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </PageSection>
+
+        <section className="landing-marquee-band" aria-label="Platform highlights">
+          <div className="landing-marquee-track">
+            {Array.from({ length: 2 }).map((_, loopIndex) => (
+              FEATURE_PANELS.map((panel) => (
+                <span key={`${panel.title}-${loopIndex}`} className="landing-marquee-chip">
+                  {panel.title}
+                </span>
+              ))
+            ))}
+          </div>
+        </section>
+
+        <section id="capabilities" className="landing-panorama-grid">
+          <InfoCard className="panorama-card panorama-card-featured">
+            <span className="panorama-kicker">Platform overview</span>
+            <h2 className="landing-story-title">
+              Une introduction qui montre vraiment ce que le site permet de faire.
+            </h2>
+            <p className="landing-mega-lead">
+              L utilisateur doit comprendre des le debut qu il peut ouvrir un projet, assigner une equipe, suivre la progression, consulter des details, gerer des fichiers, verifier le SLA et travailler selon son role.
+            </p>
+            <div className="panorama-role-list">
+              {ROLE_SPOTLIGHTS.map((item) => (
+                <span key={item.role} className="panorama-role-pill">
+                  {item.role}
+                </span>
+              ))}
+            </div>
+          </InfoCard>
+
+          {FEATURE_PANELS.map((panel) => (
+            <InfoCard key={panel.title} className="panorama-card">
+              <span className="feature-accent-label">{panel.accent}</span>
+              <h3>{panel.title}</h3>
+              <p>{panel.text}</p>
+            </InfoCard>
+          ))}
+        </section>
+
+        <section id="workflow" className="landing-storyboard">
+          <InfoCard className="landing-story-copy">
+            <p className="panel-kicker">Role architecture</p>
+            <h2 className="landing-story-title">Chaque acteur comprend sa place des la premiere page.</h2>
+            <p className="landing-mega-lead">
+              Le site est structure autour de trois roles reels. Le manager lance et organise, le chef de projet coordonne et valide, et le developpeur suit ses projets et ses taches.
+            </p>
+
+            <div className="landing-role-columns">
+              {ROLE_SPOTLIGHTS.map((item) => (
+                <article key={item.role} className="landing-role-card">
+                  <strong>{item.role}</strong>
+                  <p>{item.summary}</p>
+                </article>
+              ))}
+            </div>
+          </InfoCard>
+
+          <InfoCard className="landing-process-panel">
+            <div className="landing-process-header">
+              <div>
+                <p className="panel-kicker">Experience promise</p>
+                <h3>Espace large, lisible, et axe pilotage</h3>
+              </div>
+            </div>
+
+            <div className="landing-process-lane">
+              <article className="landing-process-step">
+                <span className="landing-process-index">A</span>
+                <strong>Presenter les modules reels</strong>
+                <p>Projects, tasks, developers, chefs de projet, managers, SLA projects, files, assignments, exports.</p>
+              </article>
+              <article className="landing-process-step">
+                <span className="landing-process-index">B</span>
+                <strong>Montrer le parcours utilisateur</strong>
+                <p>Creation, assignation, suivi, validation, export: le parcours complet est deja lisible depuis la premiere page.</p>
+              </article>
+              <article className="landing-process-step">
+                <span className="landing-process-index">C</span>
+                <strong>Faire entrer dans l espace protege</strong>
+                <p>La landing introduit le produit puis mene naturellement vers la connexion Keycloak et les vues protegees.</p>
+              </article>
+            </div>
+          </InfoCard>
+        </section>
+
+        <section className="landing-board-stage">
+          <div className="landing-wide-board">
+            <div className="landing-wide-board-head">
+              <div>
+                <p className="panel-kicker">Board preview</p>
+                <h2>Le site s organise autour des projets, des taches et des validations.</h2>
+              </div>
+              <span className="board-preview-pill">PT workflow</span>
+            </div>
+
+            <div className="landing-wide-board-grid">
+              {boardColumns.map((column) => (
+                <div key={column.id} className={`board-column board-column-${column.tone}`}>
+                  <div className="board-column-head">
+                    <strong>{column.label}</strong>
+                    <span>{column.cards.length}</span>
+                  </div>
+
+                  <div className="board-card-stack">
+                    {column.cards.map((card) => (
+                      <article key={card.id} className="board-task-card">
+                        <div className="board-task-accent" />
+                        <strong>{card.title}</strong>
+                        <p>{card.meta}</p>
+                        <div className="board-task-meta">
+                          <span className="board-task-status">{getStatusLabel(card.status)}</span>
+                          <small>{card.date}</small>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <PageSection id="workspace-zone" className="hero-panel landing-entry-portal">
+          <div className="landing-portal-grid">
+            <div className="landing-portal-copy">
+              <p className="eyebrow">Workspace access</p>
+              <h2 className="dashboard-title">La vitrine s arrete ici. Apres ca, on entre dans le vrai flow.</h2>
+              <p className="lead">
+                Connecte-toi pour charger les vraies donnees de PT_BACK et ouvrir les vues metier: projets, taches, profils, assignations, fichiers projet et SLA.
+              </p>
+
+              <div className="landing-actions">
+                <Button
+                  onClick={login}
+                  disabled={!keycloakReady || !initialized}
+                >
+                  Ouvrir la session
+                </Button>
+              </div>
+            </div>
+
+            <div className="landing-status-wrap">
+              <StatusCard tone={statusTone} title="Session status">
+                <strong>
+                  {!keycloakReady && 'Missing Keycloak configuration'}
+                  {keycloakReady && !initialized && 'Initializing Keycloak...'}
+                  {keycloakReady && initialized && !authenticated && 'Sign in to load live backend data'}
+                </strong>
+                {error ? <p>{error}</p> : <p>Le front reste branche sur les vraies routes protegees, les roles Keycloak et les endpoints du backend.</p>}
+              </StatusCard>
+            </div>
+          </div>
+        </PageSection>
+      </>
+    )
+  }
+
   return (
     <>
-      <PageSection className="hero-panel dashboard-hero">
-        <div className="dashboard-hero-copy">
-          <p className="eyebrow">Dashboard</p>
-          <h2 className="dashboard-title">
-            {authenticated
-              ? `Welcome back, ${profile.name}.`
-              : 'A cinematic project dashboard powered by your existing backend.'}
-          </h2>
-          <p className="lead">
-            This redesign keeps your routing, backend calls, task assignment flow, and Keycloak auth intact while shifting the interface toward a polished analytics command center.
-          </p>
+      <PageSection className="hero-panel workspace-hero dashboard-command-hero">
+        <div className="dashboard-command-grid">
+          <div className="dashboard-command-copy">
+            <p className="eyebrow">Workspace online</p>
+            <h2 className="dashboard-title">Pilotage large pour {welcomeName}.</h2>
+            <p className="lead">
+              Retrouve les projets, les taches, les equipes et le suivi SLA dans un espace plus large, puis entre directement dans les modules de travail.
+            </p>
+
+            <div className="workspace-action-strip">
+              <Link to="/projects" className="primary-button landing-link-button">
+                Ouvrir les projets
+              </Link>
+              <Link to="/tasks" className="ghost-button landing-link-button">
+                Voir les taches
+              </Link>
+              <Link
+                to={canViewPeople ? '/developers' : '/profile'}
+                className="ghost-button landing-link-button"
+              >
+                {canViewPeople ? 'Equipe' : 'Profil'}
+              </Link>
+            </div>
+          </div>
+
+          <div className="workspace-stat-wall">
+            <div className="workspace-crest-stage" aria-hidden="true">
+              <div className="workspace-crest-shell">
+                <div className="workspace-crest-ring workspace-crest-ring-one" />
+                <div className="workspace-crest-ring workspace-crest-ring-two" />
+                <div className="workspace-crest-ring workspace-crest-ring-three" />
+
+                <div className="workspace-crest-ray workspace-crest-ray-one" />
+                <div className="workspace-crest-ray workspace-crest-ray-two" />
+                <div className="workspace-crest-ray workspace-crest-ray-three" />
+
+                <div className="workspace-crest-core">
+                  <span>Atlas</span>
+                  <strong>PT Core</strong>
+                  <small>Delivery, staffing, SLA</small>
+                </div>
+
+                {WORKSPACE_SYMBOL_BADGES.map((item, index) => (
+                  <div
+                    key={item.label}
+                    className={`workspace-orbit-badge workspace-orbit-badge-${index + 1}`}
+                  >
+                    <i className={`workspace-orbit-dot workspace-orbit-dot-${item.tone}`} />
+                    <span>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="workspace-stat-belt">
+              {spotlightStats.map((item) => (
+                <div key={item.label} className="landing-stat-card">
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                  <small>{item.detail}</small>
+                </div>
+              ))}
+            </div>
+            <p className="workspace-micro-note">{focusSummary}</p>
+          </div>
         </div>
 
         <div className="dashboard-filter-row">
@@ -444,28 +960,10 @@ function HomePage() {
           <strong>
             {!keycloakReady && 'Missing Keycloak configuration'}
             {keycloakReady && !initialized && 'Initializing Keycloak...'}
-            {keycloakReady && initialized && authenticated && 'Analytics online'}
-            {keycloakReady && initialized && !authenticated && 'Sign in to load live backend data'}
+            {keycloakReady && initialized && authenticated && 'Workspace online'}
           </strong>
-          {error ? <p>{error}</p> : null}
-          {!error ? <p>{focusSummary}</p> : null}
+          {error ? <p>{error}</p> : <p>{focusSummary}</p>}
         </StatusCard>
-
-        <div className="actions">
-          <Button
-            onClick={login}
-            disabled={!keycloakReady || !initialized || authenticated}
-          >
-            Sign in with Keycloak
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={logout}
-            disabled={!authenticated}
-          >
-            Sign out
-          </Button>
-        </div>
       </PageSection>
 
       <section className="metrics-grid">
@@ -521,12 +1019,12 @@ function HomePage() {
             <svg className="chart-surface" viewBox="0 0 520 240" preserveAspectRatio="none" aria-hidden="true">
               <defs>
                 <linearGradient id="dashboardGlowA" x1="0%" x2="0%" y1="0%" y2="100%">
-                  <stop offset="0%" stopColor="rgba(106, 215, 255, 0.55)" />
-                  <stop offset="100%" stopColor="rgba(106, 215, 255, 0)" />
+                  <stop offset="0%" stopColor="rgba(83, 215, 255, 0.55)" />
+                  <stop offset="100%" stopColor="rgba(83, 215, 255, 0)" />
                 </linearGradient>
                 <linearGradient id="dashboardGlowB" x1="0%" x2="0%" y1="0%" y2="100%">
-                  <stop offset="0%" stopColor="rgba(141, 114, 255, 0.45)" />
-                  <stop offset="100%" stopColor="rgba(141, 114, 255, 0)" />
+                  <stop offset="0%" stopColor="rgba(22, 199, 154, 0.4)" />
+                  <stop offset="100%" stopColor="rgba(22, 199, 154, 0)" />
                 </linearGradient>
               </defs>
 
@@ -591,7 +1089,7 @@ function HomePage() {
               <div key={segment.status} className="distribution-item">
                 <div className="distribution-item-copy">
                   <i className="legend-dot" style={{ background: segment.color }} />
-                  <span>{getText(segment.status.replace('_', ' '))}</span>
+                  <span>{getText(getStatusLabel(segment.status))}</span>
                 </div>
                 <strong>{formatPercent(segment.percentage)}</strong>
               </div>
@@ -681,11 +1179,11 @@ function HomePage() {
                   <div className="bar-shell">
                     <span
                       className="bar-fill"
-                      style={{ height, background: `linear-gradient(180deg, ${STATUS_COLORS[index]}, rgba(125, 107, 255, 0.28))` }}
+                      style={{ height, background: `linear-gradient(180deg, ${STATUS_COLORS[index]}, rgba(10, 21, 32, 0.28))` }}
                     />
                   </div>
                   <strong>{value}</strong>
-                  <span>{status.replace('_', ' ')}</span>
+                  <span>{getStatusLabel(status)}</span>
                 </div>
               )
             })}
@@ -709,7 +1207,7 @@ function HomePage() {
                   <span>{task.project}</span>
                 </div>
                 <div className="activity-meta">
-                  <span className={`status-pill status-pill-${task.status}`}>{task.status.replace('_', ' ')}</span>
+                  <span className={`status-pill status-pill-${task.status}`}>{getStatusLabel(task.status)}</span>
                   <small>{task.date}</small>
                 </div>
               </div>

@@ -3,6 +3,12 @@ import { env } from '../config/env.js'
 import { getKeycloakClient } from '../auth/keycloak.js'
 
 let currentToken = ''
+const LOCAL_API_BASE_URLS = [
+  'http://127.0.0.1:8000/api',
+  'http://localhost:8000/api',
+  'http://127.0.0.1:8010/api',
+  'http://localhost:8010/api',
+]
 const FALLBACK_API_BASE_URL = 'http://127.0.0.1:8010/api'
 
 function normalizeBaseUrl(value) {
@@ -12,7 +18,12 @@ function normalizeBaseUrl(value) {
 }
 
 function getApiBaseUrlCandidates() {
-  const browserFallback =
+  const browserFallback8000 =
+    typeof window !== 'undefined'
+      ? `${window.location.protocol}//${window.location.hostname}:8000/api`
+      : ''
+
+  const browserFallback8010 =
     typeof window !== 'undefined'
       ? `${window.location.protocol}//${window.location.hostname}:8010/api`
       : ''
@@ -20,12 +31,24 @@ function getApiBaseUrlCandidates() {
   return [...new Set(
     [
       env.apiBaseUrl,
+      ...LOCAL_API_BASE_URLS,
       FALLBACK_API_BASE_URL,
-      browserFallback,
+      browserFallback8000,
+      browserFallback8010,
     ]
       .map(normalizeBaseUrl)
       .filter(Boolean),
   )]
+}
+
+function getRemainingBaseUrls(currentBaseUrl, attemptedBaseUrls = []) {
+  const attempted = new Set(
+    [currentBaseUrl, ...attemptedBaseUrls]
+      .map(normalizeBaseUrl)
+      .filter(Boolean),
+  )
+
+  return getApiBaseUrlCandidates().filter((candidate) => !attempted.has(candidate))
 }
 
 function isHtmlPayload(payload) {
@@ -50,11 +73,6 @@ function shouldRetryWithAnotherBaseUrl(error) {
   }
 
   return isHtmlPayload(error.response.data)
-}
-
-function getNextBaseUrl(currentBaseUrl) {
-  const normalizedCurrentBaseUrl = normalizeBaseUrl(currentBaseUrl)
-  return getApiBaseUrlCandidates().find((candidate) => candidate !== normalizedCurrentBaseUrl)
 }
 
 let activeBaseUrl = getApiBaseUrlCandidates()[0] ?? ''
@@ -106,13 +124,15 @@ axiosClient.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    const retryCount = Number(error.config?._baseUrlRetryCount ?? 0)
-    if (retryCount > 0) {
-      return Promise.reject(error)
-    }
+    const attemptedBaseUrls = Array.isArray(error.config?._baseUrlAttempts)
+      ? error.config._baseUrlAttempts
+      : []
+    const currentBaseUrl = normalizeBaseUrl(error.config?.baseURL || activeBaseUrl)
+    const baseUrlsTried = [...new Set([...attemptedBaseUrls, currentBaseUrl].filter(Boolean))]
+    const nextBaseUrl = getRemainingBaseUrls(currentBaseUrl, attemptedBaseUrls)[0]
 
-    const nextBaseUrl = getNextBaseUrl(error.config?.baseURL || activeBaseUrl)
     if (!nextBaseUrl) {
+      error.apiBaseUrlsTried = baseUrlsTried
       return Promise.reject(error)
     }
 
@@ -120,7 +140,7 @@ axiosClient.interceptors.response.use(
 
     return axiosClient({
       ...error.config,
-      _baseUrlRetryCount: retryCount + 1,
+      _baseUrlAttempts: baseUrlsTried,
       baseURL: nextBaseUrl,
     })
   },

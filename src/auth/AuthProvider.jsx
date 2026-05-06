@@ -7,7 +7,7 @@ import {
   hasKeycloakConfig,
   initKeycloak,
 } from './keycloak.js'
-import { filterAppRoles, normalizeRole } from './roles.js'
+import { filterAppRoles, inferRolesFromActorIds, normalizeRole } from './roles.js'
 
 function extractRoles(tokenParsed) {
   const realmRoles = tokenParsed?.realm_access?.roles ?? []
@@ -17,19 +17,67 @@ function extractRoles(tokenParsed) {
   return [...new Set([...realmRoles, ...resourceRoles].map(normalizeRole).filter(Boolean))]
 }
 
+function normalizeActorId(value) {
+  if (Number.isInteger(value) && value > 0) {
+    return value
+  }
+
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsedValue = Number.parseInt(value, 10)
+
+    if (Number.isInteger(parsedValue) && parsedValue > 0) {
+      return parsedValue
+    }
+  }
+
+  return null
+}
+
+function pickActorId(actorIds, keys) {
+  for (const key of keys) {
+    const actorId = normalizeActorId(actorIds?.[key])
+
+    if (actorId !== null) {
+      return actorId
+    }
+  }
+
+  return null
+}
+
 function normalizeActorIds(actorIds) {
   return {
-    chef_de_projet: Number.isInteger(actorIds?.chef_de_projet)
-      ? actorIds.chef_de_projet
-      : null,
-    developer: Number.isInteger(actorIds?.developer) ? actorIds.developer : null,
-    manager: Number.isInteger(actorIds?.manager) ? actorIds.manager : null,
+    chef_de_projet: pickActorId(actorIds, [
+      'chef_de_projet',
+      'chef_de_projet_id',
+      'chefDeProjet',
+      'chefDeProjetId',
+      'chef',
+    ]),
+    developer: pickActorId(actorIds, [
+      'developer',
+      'developer_id',
+      'developerId',
+      'dev',
+      'dev_id',
+    ]),
+    manager: pickActorId(actorIds, [
+      'manager',
+      'manager_id',
+      'managerId',
+    ]),
   }
 }
 
 function buildProfile(tokenParsed, user = null) {
+  const actorIds = normalizeActorIds(user?.actor_ids ?? user?.actorIds ?? user)
+  const tokenRoles = extractRoles(tokenParsed)
+  const userRoles = Array.isArray(user?.roles) ? user.roles : []
+  const fallbackRoles = user?.role ? [user.role] : []
+  const inferredRoles = inferRolesFromActorIds(actorIds)
+
   return {
-    actorIds: normalizeActorIds(user?.actor_ids),
+    actorIds,
     email: user?.email ?? tokenParsed?.email ?? 'Unavailable',
     name:
       user?.name ??
@@ -39,7 +87,12 @@ function buildProfile(tokenParsed, user = null) {
       user?.username ??
       tokenParsed?.preferred_username ??
       'Unavailable',
-    roles: filterAppRoles(user?.roles ?? extractRoles(tokenParsed)),
+    roles: filterAppRoles([
+      ...userRoles,
+      ...fallbackRoles,
+      ...tokenRoles,
+      ...inferredRoles,
+    ]),
     username: user?.username ?? tokenParsed?.preferred_username ?? 'Unavailable',
   }
 }
