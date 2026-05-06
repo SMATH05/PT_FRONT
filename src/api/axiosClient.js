@@ -3,7 +3,7 @@ import { env } from '../config/env.js'
 import { getKeycloakClient } from '../auth/keycloak.js'
 
 let currentToken = ''
-const FALLBACK_API_BASE_URL = 'http://127.0.0.1:8010/api'
+const FALLBACK_API_BASE_URL = 'http://127.0.0.1:8001/api'
 
 function normalizeBaseUrl(value) {
   return String(value ?? '')
@@ -14,7 +14,7 @@ function normalizeBaseUrl(value) {
 function getApiBaseUrlCandidates() {
   const browserFallback =
     typeof window !== 'undefined'
-      ? `${window.location.protocol}//${window.location.hostname}:8010/api`
+      ? `${window.location.protocol}//${window.location.hostname}:8001/api`
       : ''
 
   return [...new Set(
