@@ -23,7 +23,7 @@ export function getKeycloakClient() {
   return keycloakClient
 }
 
-export async function initKeycloak() {
+export async function initKeycloak(initialTokens = {}) {
   const client = getKeycloakClient()
 
   if (!client) {
@@ -36,9 +36,19 @@ export async function initKeycloak() {
         checkLoginIframe: false,
         onLoad: 'check-sso',
         pkceMethod: 'S256',
+        token: initialTokens.token,
+        refreshToken: initialTokens.refreshToken,
       })
       .then((authenticated) => ({ authenticated, client }))
   }
 
   return initPromise
+}
+
+// Redirect to Keycloak registration (hidden from users as "Créer un compte")
+export function registerKeycloak() {
+  const client = getKeycloakClient()
+  if (client) {
+    client.register()
+  }
 }

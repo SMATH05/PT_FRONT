@@ -30,8 +30,8 @@ export function useRoleAccess() {
       canViewSla: hasAnyRole(availableRoles, [APP_ROLES.MANAGER, APP_ROLES.CHEF_DE_PROJET]),
       canManageProjects: isManager,
       canManagePeople: isManager,
-      canManageTasks: isManager,
-      canManageSla: isManager,
+      canManageTasks: isManager || isChef,
+      canManageSla: isManager || isChef,
     }
   }, [profile.actorIds, profile.roles])
 }

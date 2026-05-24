@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ThemeContext } from './ThemeContext.js'
 import { getStorageItem, setStorageItem } from '../utils/storage.js'
 
-const APPEARANCE_STORAGE_KEY = 'pt-front-appearance'
+const APPEARANCE_STORAGE_KEY = 'draco-appearance'
 
 export const THEME_OPTIONS = [
   {
@@ -25,6 +25,21 @@ export const THEME_OPTIONS = [
     label: 'Aurora',
     description: 'Soft violet, sky, and pastel glow without heavy dark areas.',
   },
+  {
+    id: 'noir',
+    label: 'Dark Noir',
+    description: 'Premium deep black and grey workspace with neon accents.',
+  },
+  {
+    id: 'ocean',
+    label: 'Deep Ocean',
+    description: 'Dark blue immersive environment with cyan reflections.',
+  },
+  {
+    id: 'forest',
+    label: 'Emerald Forest',
+    description: 'Rich dark green and earthy tones for focused work.',
+  },
 ]
 
 export const SURFACE_OPTIONS = [
@@ -32,6 +47,11 @@ export const SURFACE_OPTIONS = [
     id: 'glass',
     label: 'Glass',
     description: 'Transparent panels with blur and floating layers.',
+  },
+  {
+    id: 'liquid',
+    label: 'Liquid Glass',
+    description: 'Extreme frosted glass with deep blur and glowing borders.',
   },
   {
     id: 'soft',
@@ -100,7 +120,7 @@ function ThemeProvider({ children }) {
     document.documentElement.dataset.theme = appearance.theme
     document.documentElement.dataset.surface = appearance.surface
     document.documentElement.dataset.motion = appearance.motion
-    document.documentElement.style.colorScheme = 'light'
+    document.documentElement.style.colorScheme = appearance.theme === 'noir' ? 'dark' : 'light'
 
     setStorageItem(APPEARANCE_STORAGE_KEY, JSON.stringify(appearance))
   }, [appearance])

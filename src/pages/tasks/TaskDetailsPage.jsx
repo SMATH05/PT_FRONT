@@ -14,6 +14,15 @@ import {
   getEntity,
   getText,
 } from '../../utils/apiResponse.js'
+import { updateTaskStatus } from '../../services/taskService.js'
+
+const STATUS_LABELS = {
+  pending: 'Pending',
+  in_progress: 'In Progress',
+  waiting_validation: 'Waiting for Validation',
+  done: 'Done',
+  validated: 'Validated',
+}
 
 function TaskDetailsPage() {
   const { canManageTasks } = useRoleAccess()
@@ -22,6 +31,8 @@ function TaskDetailsPage() {
   const [developers, setDevelopers] = useState([])
   const [sla, setSla] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [updatingStatus, setUpdatingStatus] = useState(false)
+  const [statusValue, setStatusValue] = useState('')
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -39,9 +50,11 @@ function TaskDetailsPage() {
           return
         }
 
-        setTask(getEntity(taskPayload))
+        const taskData = getEntity(taskPayload)
+        setTask(taskData)
         setDevelopers(getCollection(developersPayload))
         setSla(getEntity(slaPayload))
+        setStatusValue(taskData?.status || '')
       } catch (loadError) {
         if (active) {
           setError(getApiErrorMessage(loadError, 'Unable to load task.'))
@@ -59,6 +72,25 @@ function TaskDetailsPage() {
       active = false
     }
   }, [id])
+
+  async function handleStatusUpdate() {
+    if (!statusValue || statusValue === task?.status) {
+      return
+    }
+
+    try {
+      setUpdatingStatus(true)
+      setError('')
+      const response = await updateTaskStatus(id, { status: statusValue })
+      const updatedTask = getEntity(response)
+      setTask(updatedTask)
+      setStatusValue(updatedTask.status)
+    } catch (updateError) {
+      setError(getApiErrorMessage(updateError, 'Unable to update task status.'))
+    } finally {
+      setUpdatingStatus(false)
+    }
+  }
 
   return (
     <>
@@ -144,6 +176,32 @@ function TaskDetailsPage() {
               ) : (
                 <p className="feedback-message">No task SLA configured yet.</p>
               )}
+            </InfoCard>
+
+            <InfoCard wide>
+              <h2>Update Status</h2>
+              <p className="field-hint">
+                As a developer, moving a task to "Done" will request validation from the Chef de Projet.
+              </p>
+              <div className="status-update-row">
+                <select 
+                  className="form-field"
+                  value={statusValue}
+                  onChange={(e) => setStatusValue(e.target.value)}
+                  disabled={updatingStatus}
+                >
+                  {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+                <button 
+                  className="primary-button" 
+                  onClick={handleStatusUpdate}
+                  disabled={updatingStatus || statusValue === task?.status}
+                >
+                  {updatingStatus ? 'Updating...' : 'Update Status'}
+                </button>
+              </div>
             </InfoCard>
 
             {canManageTasks ? (

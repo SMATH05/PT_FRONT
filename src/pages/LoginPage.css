@@ -1,0 +1,340 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* Unified Dark Noir Theme for Login */
+.dlp-root {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #0a0a0a; /* True black from landing */
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── AMBIENT AURORA (From Landing) ── */
+.landing-ambient {
+  position: absolute;
+  width: 60vw;
+  height: 60vw;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.landing-ambient-one {
+  top: -20%;
+  right: -10%;
+  background: radial-gradient(circle, rgba(52, 152, 219, 0.2) 0%, transparent 70%);
+}
+
+.landing-ambient-two {
+  bottom: -20%;
+  left: -10%;
+  background: radial-gradient(circle, rgba(142, 68, 173, 0.15) 0%, transparent 70%);
+}
+
+.landing-ambient-three {
+  top: 30%;
+  left: 20%;
+  background: radial-gradient(circle, rgba(44, 62, 80, 0.2) 0%, transparent 60%);
+}
+
+/* ── MOUNTAIN OVERLAY ── */
+.dlp-bg {
+  position: fixed;
+  inset: 0;
+  background-image: url('/dark_mountain_bg_1778117736683.png');
+  background-size: cover;
+  background-position: right center;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+.dlp-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #0a0a0a 40%, rgba(10, 10, 10, 0) 100%);
+  z-index: 1;
+}
+
+/* ── NAVIGATION ── */
+.dlp-nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 60px;
+}
+
+.dlp-brand {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: -0.5px;
+}
+
+.dlp-logo-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.dlp-logo-img-small {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  opacity: 0.8;
+}
+
+.dlp-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.dlp-nav-links a {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.dlp-nav-links a:hover {
+  color: #fff;
+}
+
+.dlp-nav-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 8px 20px;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.dlp-nav-btn:hover {
+  background: #fff;
+  color: #000;
+}
+
+/* ── MAIN CONTENT ── */
+.dlp-container {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 0 60px 60px 60px;
+}
+
+.dlp-content {
+  width: 100%;
+  max-width: 480px;
+  animation: dlpFadeIn 0.8s ease-out;
+}
+
+@keyframes dlpFadeIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.eyebrow {
+  color: #3498db;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+}
+
+.dlp-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  letter-spacing: -2px;
+  line-height: 1.1;
+}
+
+.dlp-switch-text {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1rem;
+  margin-bottom: 40px;
+}
+
+.dlp-switch-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 10px;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* ── FORM ── */
+.dlp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dlp-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.dlp-field {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 10px 18px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dlp-field:focus-within {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.dlp-field-active {
+  border-color: #3498db;
+  box-shadow: 0 0 0 1px #3498db;
+}
+
+.dlp-field label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.dlp-field input {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 6px 0;
+}
+
+.dlp-field input:focus {
+  outline: none;
+}
+
+.dlp-field input::placeholder {
+  color: rgba(255, 255, 255, 0.15);
+}
+
+.dlp-field-icon {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  opacity: 0.3;
+}
+
+.dlp-error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* ── ACTIONS ── */
+.dlp-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.dlp-btn-primary {
+  flex: 1.5;
+  background: #fff;
+  color: #000;
+  border: none;
+  border-radius: 50px;
+  padding: 16px;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.dlp-btn-primary:hover:not(:disabled) {
+  transform: scale(1.02);
+  box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+}
+
+.dlp-btn-secondary {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  padding: 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dlp-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* ── FOOTER LOGO ── */
+.dlp-footer-logo {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  z-index: 10;
+}
+
+/* Responsive Alignment */
+@media (max-width: 1024px) {
+  .dlp-nav { padding: 25px 30px; }
+  .dlp-container { padding: 0 30px 40px 30px; }
+  .dlp-bg::before {
+    background: linear-gradient(0deg, #0a0a0a 65%, rgba(10, 10, 10, 0) 100%);
+  }
+  .dlp-bg { opacity: 0.4; }
+  .dlp-container {
+    justify-content: center;
+    text-align: center;
+  }
+  .dlp-content { max-width: 100%; }
+  .dlp-field { text-align: left; }
+}
+
+@media (max-width: 640px) {
+  .dlp-title { font-size: 2.5rem; letter-spacing: -1px; }
+  .dlp-row { grid-template-columns: 1fr; }
+  .dlp-actions { flex-direction: column; }
+}

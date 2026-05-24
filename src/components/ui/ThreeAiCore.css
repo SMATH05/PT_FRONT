@@ -1,0 +1,13 @@
+.three-ai-core-container {
+  width: 180px;
+  height: 180px;
+  cursor: pointer;
+  display: block;
+  filter: drop-shadow(0 0 20px rgba(83, 215, 255, 0.5));
+  transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.three-ai-core-container:hover {
+  filter: drop-shadow(0 0 35px rgba(83, 215, 255, 0.9));
+  transform: scale(1.06);
+}

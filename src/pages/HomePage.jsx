@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import PageSection from '../components/common/PageSection.jsx'
 import InfoCard from '../components/ui/InfoCard.jsx'
 import StatusCard from '../components/ui/StatusCard.jsx'
@@ -50,7 +50,7 @@ const FEATURE_PANELS = [
   },
   {
     title: 'SLA, exports, and role access',
-    text: 'SLA projects, project exports, personal profiles, and protected routes are already connected to Keycloak and the PT_BACK API.',
+    text: 'SLA projects, project exports, personal profiles, and protected routes are already connected to the DRACO secure API.',
     accent: 'Gold',
   },
 ]
@@ -226,6 +226,7 @@ function HomePage() {
     profile,
   } = useAuth()
   const { actorIds, canViewPeople, currentRole, isChef, isManager } = useRoleAccess()
+  const navigate = useNavigate()
 
   const [focus, setFocus] = useState('portfolio')
   const [windowView, setWindowView] = useState('30d')
@@ -563,8 +564,8 @@ function HomePage() {
     },
     {
       label: authenticated ? 'Task completion' : 'Security and API',
-      value: authenticated ? formatPercent(completionRate) : 'PT',
-      detail: authenticated ? 'From your current task statuses' : 'Keycloak auth and PT_BACK endpoints',
+      value: authenticated ? formatPercent(completionRate) : 'DRACO',
+      detail: authenticated ? 'From your current task statuses' : 'Keycloak auth and DRACO endpoints',
     },
   ]), [authenticated, completionRate, deliveryPeople, projectCount])
 
@@ -586,7 +587,7 @@ function HomePage() {
 
   if (!authenticated) {
     return (
-      <>
+      <div className="hpl-root">
         <PageSection className="hero-panel immersive-landing">
           <div className="landing-ambient landing-ambient-one" aria-hidden="true" />
           <div className="landing-ambient landing-ambient-two" aria-hidden="true" />
@@ -594,7 +595,7 @@ function HomePage() {
 
           <div className="landing-hero-grid">
             <div className="landing-copy-column">
-              <p className="eyebrow">PT project command center</p>
+              <p className="eyebrow">DRACO project command center</p>
               <h2 className="landing-mega-title">
                 Une entree claire pour comprendre le site avant d entrer dans le workspace.
               </h2>
@@ -604,7 +605,7 @@ function HomePage() {
 
               <div className="landing-actions">
                 <Button
-                  onClick={login}
+                  onClick={() => navigate('/login')}
                   disabled={!keycloakReady || !initialized}
                 >
                   Entrer dans le workspace
@@ -632,7 +633,7 @@ function HomePage() {
                 <div className="landing-orbit-ring landing-orbit-ring-one" />
                 <div className="landing-orbit-ring landing-orbit-ring-two" />
                 <div className="landing-orbit-core">
-                  <span>PT</span>
+                  <span>DRACO</span>
                   <strong>Flow</strong>
                   <small>Projects, people, delivery</small>
                 </div>
@@ -788,7 +789,7 @@ function HomePage() {
                 <p className="panel-kicker">Board preview</p>
                 <h2>Le site s organise autour des projets, des taches et des validations.</h2>
               </div>
-              <span className="board-preview-pill">PT workflow</span>
+              <span className="board-preview-pill">DRACO workflow</span>
             </div>
 
             <div className="landing-wide-board-grid">
@@ -818,38 +819,8 @@ function HomePage() {
           </div>
         </section>
 
-        <PageSection id="workspace-zone" className="hero-panel landing-entry-portal">
-          <div className="landing-portal-grid">
-            <div className="landing-portal-copy">
-              <p className="eyebrow">Workspace access</p>
-              <h2 className="dashboard-title">La vitrine s arrete ici. Apres ca, on entre dans le vrai flow.</h2>
-              <p className="lead">
-                Connecte-toi pour charger les vraies donnees de PT_BACK et ouvrir les vues metier: projets, taches, profils, assignations, fichiers projet et SLA.
-              </p>
 
-              <div className="landing-actions">
-                <Button
-                  onClick={login}
-                  disabled={!keycloakReady || !initialized}
-                >
-                  Ouvrir la session
-                </Button>
-              </div>
-            </div>
-
-            <div className="landing-status-wrap">
-              <StatusCard tone={statusTone} title="Session status">
-                <strong>
-                  {!keycloakReady && 'Missing Keycloak configuration'}
-                  {keycloakReady && !initialized && 'Initializing Keycloak...'}
-                  {keycloakReady && initialized && !authenticated && 'Sign in to load live backend data'}
-                </strong>
-                {error ? <p>{error}</p> : <p>Le front reste branche sur les vraies routes protegees, les roles Keycloak et les endpoints du backend.</p>}
-              </StatusCard>
-            </div>
-          </div>
-        </PageSection>
-      </>
+      </div>
     )
   }
 
@@ -893,7 +864,7 @@ function HomePage() {
 
                 <div className="workspace-crest-core">
                   <span>Atlas</span>
-                  <strong>PT Core</strong>
+                  <strong>DRACO Core</strong>
                   <small>Delivery, staffing, SLA</small>
                 </div>
 

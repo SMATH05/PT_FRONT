@@ -104,16 +104,33 @@ function ProjectsListPage() {
                     <tr key={project.id}>
                       <td>{getText(project.name)}</td>
                       <td>{getText(project.client)}</td>
-                      <td>{getText(project.manager?.name ?? project.manager_id)}</td>
                       <td>
                         {getText(
-                          project.chef_de_projet?.name ?? project.chef_de_projet_id,
-                          'Not assigned',
+                          project.manager?.name ?? 
+                          project.manager?.id ?? 
+                          project.manager_id
+                        )}
+                      </td>
+                      <td>
+                        {getText(
+                          project.chef_de_projet?.name ?? 
+                          project.chefDeProjet?.name ?? 
+                          project.chef_de_projet_id ?? 
+                          project.chefDeProjet_id,
+                          'Not assigned'
                         )}
                       </td>
                       <td>{getText(project.status)}</td>
-                      <td>{getText(project.deadline, 'Not set')}</td>
-                      <td>{getText(project.workspace_exists ? 'Ready' : 'Missing')}</td>
+                      <td>
+                        {project.deadline 
+                          ? new Date(project.deadline).toLocaleDateString() 
+                          : 'Not set'}
+                      </td>
+                      <td>
+                        {project.workspace_exists === true || project.workspace_exists === 1 || project.workspace_exists === '1'
+                          ? 'Ready' 
+                          : 'Missing'}
+                      </td>
                       <td>
                         <div className="table-actions">
                           <Link to={`/projects/${project.id}`} className="table-link">

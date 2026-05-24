@@ -116,11 +116,15 @@ export function AuthProvider({ children }) {
       return undefined
     }
 
-    initKeycloak()
+    const savedToken = localStorage.getItem('draco_token');
+    const savedRefreshToken = localStorage.getItem('draco_refresh_token');
+
+    initKeycloak({ token: savedToken, refreshToken: savedRefreshToken })
       .then(({ authenticated: isAuthenticated, client }) => {
         if (!active || !client) {
           return
         }
+
         setInitialized(true)
         setAuthenticated(isAuthenticated)
         setToken(client.token ?? '')
@@ -131,6 +135,9 @@ export function AuthProvider({ children }) {
           setToken(client.token ?? '')
           setProfile(buildProfile(client.tokenParsed))
           setError('')
+          // Save tokens on success
+          localStorage.setItem('draco_token', client.token ?? '');
+          localStorage.setItem('draco_refresh_token', client.refreshToken ?? '');
         }
 
         client.onAuthLogout = () => {
@@ -250,10 +257,67 @@ export function AuthProvider({ children }) {
       initialized,
       keycloakReady: hasKeycloakConfig,
       login: () => getKeycloakClient()?.login(),
-      logout: () =>
+      manualRegister: async (firstName, lastName, email, password, role) => {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName, lastName, email, password, role }),
+        })
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.error || 'Erreur lors de la création du compte.')
+        }
+        return response.json()
+      },
+      manualLogin: async (username, password) => {
+        const client = getKeycloakClient()
+        if (!client) return
+
+        const params = new URLSearchParams()
+        params.append('grant_type', 'password')
+        params.append('client_id', client.clientId)
+        params.append('username', username)
+        params.append('password', password)
+        params.append('scope', 'openid')
+
+        const response = await fetch(`/auth-proxy/realms/${client.realm}/protocol/openid-connect/token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params,
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.error_description || 'Identifiants invalides ou configuration Keycloak incorrecte.')
+        }
+
+        const data = await response.json()
+        
+        // Update client tokens manually to avoid "initialized once" error
+        client.token = data.access_token
+        client.refreshToken = data.refresh_token
+        client.idToken = data.id_token
+        
+        // Persist for refresh
+        localStorage.setItem('draco_token', data.access_token);
+        localStorage.setItem('draco_refresh_token', data.refresh_token);
+
+        // Some versions of keycloak-js use this to parse tokens
+        if (typeof client.setToken === 'function') {
+          client.setToken(data.access_token, data.refresh_token, data.id_token)
+        }
+
+        setAuthenticated(true)
+        setToken(data.access_token)
+        setProfile(buildProfile(client.tokenParsed))
+      },
+      logout: () => {
+        localStorage.removeItem('draco_token')
+        localStorage.removeItem('draco_refresh_token')
         getKeycloakClient()?.logout({
           redirectUri: window.location.origin,
-        }),
+        })
+      },
       profile,
       token,
     }),

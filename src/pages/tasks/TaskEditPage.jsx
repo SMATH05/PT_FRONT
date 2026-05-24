@@ -280,6 +280,7 @@ function TaskEditPage() {
                 <select name="status" value={form.status} onChange={handleChange}>
                   <option value="pending">Pending</option>
                   <option value="in_progress">In progress</option>
+                  <option value="waiting_validation">Waiting for validation</option>
                   <option value="done">Done</option>
                   <option value="validated">Validated</option>
                 </select>

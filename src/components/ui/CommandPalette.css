@@ -1,0 +1,116 @@
+/* Command Palette Styles */
+.command-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(7, 19, 29, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+}
+
+.command-dialog {
+  position: fixed;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(90vw, 550px);
+  background: var(--surface-card-bg);
+  border: 1px solid var(--border-default);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  z-index: 10001;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.command-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.command-search-icon {
+  color: var(--fg-muted);
+}
+
+.command-input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--fg-default);
+  font-size: 1.1rem;
+  outline: none;
+}
+
+.command-kb-badge {
+  padding: 2px 6px;
+  background: var(--surface-chip-bg);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  font-size: 0.7rem;
+  color: var(--fg-muted);
+}
+
+.command-results {
+  max-height: 350px;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.command-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: none;
+  background: transparent;
+  color: var(--fg-default);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+.command-item:hover {
+  background: rgba(83, 215, 255, 0.08);
+  color: var(--accent-primary);
+}
+
+.command-item-hint {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.command-item:hover .command-item-hint {
+  opacity: 1;
+}
+
+.command-empty {
+  padding: 30px;
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 0.95rem;
+}
+
+.command-footer {
+  padding: 12px 20px;
+  background: var(--surface-nav-bg);
+  border-top: 1px solid var(--border-default);
+  color: var(--fg-muted);
+  font-size: 0.8rem;
+}
+
+.command-footer kbd {
+  background: var(--surface-card-bg);
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid var(--border-default);
+  margin: 0 2px;
+}

@@ -1,1 +1,1 @@
-export const APP_NAME = 'PT Front'
+export const APP_NAME = 'DRACO'

@@ -10,6 +10,14 @@ import {
   getText,
 } from '../../utils/apiResponse.js'
 
+const STATUS_LABELS = {
+  pending: 'Pending',
+  in_progress: 'In Progress',
+  waiting_validation: 'Waiting for Validation',
+  done: 'Done',
+  validated: 'Validated',
+}
+
 function TasksListPage() {
   const { canManageTasks } = useRoleAccess()
   const [tasks, setTasks] = useState([])
@@ -95,7 +103,11 @@ function TasksListPage() {
                           'Not assigned',
                         )}
                       </td>
-                      <td>{getText(task.status)}</td>
+                      <td>
+                        <span className={`status-pill status-${task.status}`}>
+                          {STATUS_LABELS[task.status] || task.status}
+                        </span>
+                      </td>
                       <td>{getCollection(task.developers).length}</td>
                       <td>
                         <div className="table-actions">

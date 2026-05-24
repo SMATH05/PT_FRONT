@@ -50,3 +50,11 @@ export async function removeAllTaskDevelopers(taskId) {
     )
     return response.data
 }
+
+export async function updateTaskStatus(taskId, payload) {
+    const response = await axiosClient.patch(
+        API_ENDPOINTS.tasks.updateStatus(taskId),
+        payload,
+    )
+    return response.data
+}

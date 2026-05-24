@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 import AppLayout from '../layouts/AppLayout.jsx'
 import HomePage from '../pages/HomePage.jsx'
+import LoginPage from '../pages/LoginPage.jsx'
 import MorePage from '../pages/MorePage.jsx'
 import ProfilePage from '../pages/ProfilePage.jsx'
 import ProtectedRoute from './ProtectedRoute.jsx'
@@ -27,6 +28,7 @@ import SlaProjectCreatePage from '../pages/sla/SlaProjectCreatePage.jsx'
 import SlaProjectDetailsPage from '../pages/sla/SlaProjectDetailsPage.jsx'
 import SlaProjectEditPage from '../pages/sla/SlaProjectEditPage.jsx'
 import SlaProjectsListPage from '../pages/sla/SlaProjectsListPage.jsx'
+import NotificationsPage from '../pages/NotificationsPage.jsx'
 import TaskCreatePage from '../pages/tasks/TaskCreatePage.jsx'
 import TaskDetailsPage from '../pages/tasks/TaskDetailsPage.jsx'
 import TaskEditPage from '../pages/tasks/TaskEditPage.jsx'
@@ -43,6 +45,10 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
+        path: 'login',
+        element: <LoginPage />,
+      },
+      {
         element: <ProtectedRoute />,
         children: [
           {
@@ -52,6 +58,10 @@ const router = createBrowserRouter([
           {
             path: 'more',
             element: <MorePage />,
+          },
+          {
+            path: 'notifications',
+            element: <NotificationsPage />,
           },
           {
             element: (
@@ -116,6 +126,14 @@ const router = createBrowserRouter([
                 path: 'sla-projects/:id',
                 element: <SlaProjectDetailsPage />,
               },
+              {
+                path: 'tasks/create',
+                element: <TaskCreatePage />,
+              },
+              {
+                path: 'tasks/:id/edit',
+                element: <TaskEditPage />,
+              },
             ],
           },
           {
@@ -176,14 +194,6 @@ const router = createBrowserRouter([
               {
                 path: 'developers/:id/edit',
                 element: <DeveloperEditPage />,
-              },
-              {
-                path: 'tasks/create',
-                element: <TaskCreatePage />,
-              },
-              {
-                path: 'tasks/:id/edit',
-                element: <TaskEditPage />,
               },
               {
                 path: 'sla-projects/create',
